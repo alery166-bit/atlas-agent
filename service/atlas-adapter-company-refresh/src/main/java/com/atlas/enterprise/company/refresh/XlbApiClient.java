@@ -40,6 +40,18 @@ final class XlbApiClient {
         return result;
     }
 
+    JsonNode nullableObject(int apiId, Map<String, String> params, String path) throws IOException {
+        JsonNode root = execute(apiId, params);
+        JsonNode result = path(root, path);
+        if (result.isMissingNode() || result.isNull()) {
+            return null;
+        }
+        if (!result.isObject()) {
+            throw new IOException("XLB response path is not an object: " + path);
+        }
+        return result;
+    }
+
     List<JsonNode> page(int apiId, Map<String, String> params, String path) throws IOException {
         List<JsonNode> result = new ArrayList<>();
         int pageIndex = 1;
@@ -157,12 +169,17 @@ final class XlbApiClient {
     }
 
     private static JsonNode requiredPath(JsonNode root, String path) throws IOException {
+        JsonNode current = path(root, path);
+        if (current.isMissingNode() || current.isNull()) {
+            throw new IOException("XLB response path is missing: " + path);
+        }
+        return current;
+    }
+
+    private static JsonNode path(JsonNode root, String path) {
         JsonNode current = root;
         for (String part : path.split("\\.")) {
             current = current.path(part);
-        }
-        if (current.isMissingNode() || current.isNull()) {
-            throw new IOException("XLB response path is missing: " + path);
         }
         return current;
     }

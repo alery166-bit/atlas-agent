@@ -251,8 +251,8 @@ final class XlbCompanyRefreshAdapter implements CompanyRefreshPort {
     }
 
     private List<JsonNode> liquidation(String eid) throws IOException {
-        JsonNode value = client.object(2691, Map.of("eid", eid), "entInfo.liquidation");
-        return value.isEmpty() ? List.of() : List.of(value);
+        JsonNode value = client.nullableObject(2691, Map.of("eid", eid), "entInfo.liquidation");
+        return value == null || value.isEmpty() ? List.of() : List.of(value);
     }
 
     private void addContact(List<JsonNode> target, List<JsonNode> source, String type) {

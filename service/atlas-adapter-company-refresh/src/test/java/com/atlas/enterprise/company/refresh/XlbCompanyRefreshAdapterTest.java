@@ -120,6 +120,40 @@ class XlbCompanyRefreshAdapterTest {
         assertTrue(result.categoryStatuses().stream().anyMatch(status -> status.failed()));
     }
 
+    @Test
+    void nullLiquidationIsAnExplicitSuccessfulEmptyResult() throws Exception {
+        startServer(Map.of(
+            "4713", success("""
+                {"search":{"queryCompanyByUscc":{"base":{"eid":"E-100"}}}}
+                """),
+            "1001", success("""
+                {"entInfo":{"base":{"eid":"E-100","entname":"示例科技有限公司",
+                "creditCode":"91110000123456789X"}}}
+                """),
+            "2691", success("""
+                {"entInfo":{"liquidation":null}}
+                """)
+        ));
+
+        XlbCompanyRefreshProperties properties = properties(
+            List.of("BASE", "LIQUIDATION"),
+            List.of()
+        );
+        CompanyRefreshResult result = adapter(properties).refresh(company());
+
+        assertFalse(result.failed());
+        assertTrue(result.riskEvents().records().isEmpty());
+        assertEquals(
+            "SUCCESS_EMPTY",
+            result.categoryStatuses().stream()
+                .filter(status -> status.sourceName().endsWith("#LIQUIDATION"))
+                .findFirst()
+                .orElseThrow()
+                .queryStatus()
+                .name()
+        );
+    }
+
     private XlbCompanyRefreshAdapter adapter(XlbCompanyRefreshProperties properties) {
         return new XlbCompanyRefreshAdapter(
             properties,
