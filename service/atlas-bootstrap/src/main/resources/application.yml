@@ -1,0 +1,153 @@
+spring:
+  application:
+    name: atlas-enterprise-agent
+  profiles:
+    default: local
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    default-property-inclusion: non_null
+  datasource:
+    url: jdbc:h2:file:./.data/atlas;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;AUTO_SERVER=TRUE
+    username: atlas
+    password: atlas-local
+    driver-class-name: org.h2.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  mvc:
+    async:
+      request-timeout: 30m
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 21MB
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      cors:
+        allowed-origins: ${ATLAS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+        allowed-methods: GET,OPTIONS
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+atlas:
+  skills:
+    require-published-for-new-tasks: ${ATLAS_REQUIRE_PUBLISHED_SKILLS:true}
+  security:
+    # LOCAL is allowed only for local development and automated tests.
+    # Production deployments must use PROXY behind an authenticated gateway.
+    mode: ${ATLAS_SECURITY_MODE:local}
+    proxy-secret: ${ATLAS_SECURITY_PROXY_SECRET:}
+  golden:
+    root: ${ATLAS_GOLDEN_ROOT:../data/golden}
+  web:
+    allowed-origins: ${ATLAS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  runtime:
+    worker-concurrency: 1
+    model-review-concurrency: ${ATLAS_MODEL_REVIEW_CONCURRENCY:1}
+  storage:
+    root: ./.data/files
+  report:
+    template-path: ${ATLAS_REPORT_TEMPLATE:../data/templates/北京简熹和食品有限公司_企业风险监测分析报告20260714.docx}
+    previous-root: ${ATLAS_PREVIOUS_REPORT_ROOT:..}
+    template-alias: report-v1
+    managed-template-root: ${ATLAS_MANAGED_TEMPLATE_ROOT:./.data/report-templates}
+  data:
+    provider: ${ATLAS_DATA_PROVIDER:offline}
+    offline:
+      root: ${ATLAS_COMPANY_DATA_ROOT:../data/company}
+      json-files:
+        - ${ATLAS_SAMPLE_QIANDAO_JSON:../data/samples/乾道投资控股集团有限公司.json}
+        - ${ATLAS_SAMPLE_TONGCHENG_JSON:../data/samples/北京童程童慧科技有限公司.json}
+    es:
+      base-url: ${ATLAS_ES_BASE_URL:http://127.0.0.1:9200}
+      connect-timeout: ${ATLAS_ES_CONNECT_TIMEOUT:3s}
+      request-timeout: ${ATLAS_ES_REQUEST_TIMEOUT:15s}
+      max-records: ${ATLAS_ES_MAX_RECORDS:5000}
+      company-alias: ${ATLAS_ES_COMPANY_ALIAS:atlas-company-read}
+      event-alias: ${ATLAS_ES_EVENT_ALIAS:atlas-company-event-read}
+      public-intel-alias: ${ATLAS_ES_PUBLIC_INTEL_ALIAS:atlas-public-intel-read}
+      contact-alias: ${ATLAS_ES_CONTACT_ALIAS:atlas-company-contact-read}
+      relation-alias: ${ATLAS_ES_RELATION_ALIAS:atlas-company-relation-read}
+      username: ${ATLAS_ES_USERNAME:}
+      password: ${ATLAS_ES_PASSWORD:}
+      api-key: ${ATLAS_ES_API_KEY:}
+  company-refresh:
+    xlb:
+      enabled: ${ATLAS_COMPANY_REFRESH_ENABLED:false}
+      base-url: ${ATLAS_COMPANY_REFRESH_BASE_URL:https://openapi.xiaolanben.com/api/}
+      access-id: ${ATLAS_COMPANY_REFRESH_ACCESS_ID:}
+      access-token: ${ATLAS_COMPANY_REFRESH_ACCESS_TOKEN:}
+      connect-timeout: ${ATLAS_COMPANY_REFRESH_CONNECT_TIMEOUT:5s}
+      request-timeout: ${ATLAS_COMPANY_REFRESH_REQUEST_TIMEOUT:30s}
+      max-attempts: ${ATLAS_COMPANY_REFRESH_MAX_ATTEMPTS:3}
+      page-size: ${ATLAS_COMPANY_REFRESH_PAGE_SIZE:100}
+      max-records-per-category: ${ATLAS_COMPANY_REFRESH_MAX_RECORDS_PER_CATEGORY:5000}
+  intelligence:
+    content:
+      enabled: ${ATLAS_EVIDENCE_CONTENT_ENABLED:false}
+      connect-timeout: ${ATLAS_EVIDENCE_CONTENT_CONNECT_TIMEOUT:5s}
+      request-timeout: ${ATLAS_EVIDENCE_CONTENT_REQUEST_TIMEOUT:15s}
+      max-bytes: ${ATLAS_EVIDENCE_CONTENT_MAX_BYTES:1048576}
+      user-agent: ${ATLAS_EVIDENCE_CONTENT_USER_AGENT:AtlasEvidenceCollector/1.0}
+      allow-private-network: ${ATLAS_EVIDENCE_CONTENT_ALLOW_PRIVATE_NETWORK:false}
+    search:
+      providers:
+        - name: tavily
+          enabled: ${ATLAS_SEARCH_PRIMARY_ENABLED:false}
+          provider-type: ${ATLAS_SEARCH_PRIMARY_PROVIDER_TYPE:TAVILY}
+          mode: SEARCH_ENGINE
+          base-url: ${ATLAS_SEARCH_PRIMARY_BASE_URL:https://api.tavily.com}
+          path: ${ATLAS_SEARCH_PRIMARY_PATH:/search}
+          query-parameter: ${ATLAS_SEARCH_PRIMARY_QUERY_PARAMETER:q}
+          limit-parameter: ${ATLAS_SEARCH_PRIMARY_LIMIT_PARAMETER:count}
+          max-results: ${ATLAS_SEARCH_PRIMARY_MAX_RESULTS:10}
+          search-depth: ${ATLAS_SEARCH_PRIMARY_SEARCH_DEPTH:basic}
+          topic: ${ATLAS_SEARCH_PRIMARY_TOPIC:general}
+          connect-timeout: ${ATLAS_SEARCH_PRIMARY_CONNECT_TIMEOUT:5s}
+          request-timeout: ${ATLAS_SEARCH_PRIMARY_REQUEST_TIMEOUT:15s}
+          minimum-interval-ms: ${ATLAS_SEARCH_PRIMARY_MIN_INTERVAL_MS:250}
+          max-attempts: ${ATLAS_SEARCH_PRIMARY_MAX_ATTEMPTS:3}
+          retry-backoff: ${ATLAS_SEARCH_PRIMARY_RETRY_BACKOFF:250ms}
+          circuit-breaker-failure-threshold: ${ATLAS_SEARCH_PRIMARY_CIRCUIT_FAILURE_THRESHOLD:5}
+          circuit-breaker-open-duration: ${ATLAS_SEARCH_PRIMARY_CIRCUIT_OPEN_DURATION:30s}
+          required: ${ATLAS_SEARCH_PRIMARY_REQUIRED:true}
+          returns-accessible-citations: true
+          require-api-key: true
+          api-key: ${ATLAS_SEARCH_PRIMARY_API_KEY:}
+          api-key-header: ${ATLAS_SEARCH_PRIMARY_API_KEY_HEADER:Authorization}
+          api-key-prefix: "${ATLAS_SEARCH_PRIMARY_API_KEY_PREFIX:Bearer }"
+        - name: cited-llm-search
+          enabled: ${ATLAS_SEARCH_LLM_ENABLED:false}
+          mode: LLM_SEARCH
+          base-url: ${ATLAS_SEARCH_LLM_BASE_URL:https://llm-search-gateway.invalid}
+          path: ${ATLAS_SEARCH_LLM_PATH:/v1/search}
+          query-parameter: ${ATLAS_SEARCH_LLM_QUERY_PARAMETER:q}
+          limit-parameter: ${ATLAS_SEARCH_LLM_LIMIT_PARAMETER:count}
+          max-results: ${ATLAS_SEARCH_LLM_MAX_RESULTS:10}
+          connect-timeout: ${ATLAS_SEARCH_LLM_CONNECT_TIMEOUT:5s}
+          request-timeout: ${ATLAS_SEARCH_LLM_REQUEST_TIMEOUT:30s}
+          minimum-interval-ms: ${ATLAS_SEARCH_LLM_MIN_INTERVAL_MS:1000}
+          max-attempts: ${ATLAS_SEARCH_LLM_MAX_ATTEMPTS:2}
+          retry-backoff: ${ATLAS_SEARCH_LLM_RETRY_BACKOFF:500ms}
+          circuit-breaker-failure-threshold: ${ATLAS_SEARCH_LLM_CIRCUIT_FAILURE_THRESHOLD:3}
+          circuit-breaker-open-duration: ${ATLAS_SEARCH_LLM_CIRCUIT_OPEN_DURATION:60s}
+          required: ${ATLAS_SEARCH_LLM_REQUIRED:false}
+          returns-accessible-citations: ${ATLAS_SEARCH_LLM_RETURNS_CITATIONS:true}
+          require-api-key: true
+          api-key: ${ATLAS_SEARCH_LLM_API_KEY:}
+          api-key-header: ${ATLAS_SEARCH_LLM_API_KEY_HEADER:Authorization}
+          api-key-prefix: "${ATLAS_SEARCH_LLM_API_KEY_PREFIX:Bearer }"
+
+logging:
+  pattern:
+    level: "%5p [traceId=%X{traceId:-}]"

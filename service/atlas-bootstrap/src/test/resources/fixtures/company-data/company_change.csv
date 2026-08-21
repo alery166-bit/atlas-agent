@@ -1,0 +1,3 @@
+id,company_id,change_item,change_date,change_before,change_after,create_time,update_time
+change-1,q-jianxi,住所变更,2026-07-20,北京市顺义区旧址,北京市朝阳区新址,2026-07-20 10:00:00,2026-07-20 10:00:00
+change-2,q-subject-conflict,法定代表人变更,2026-07-30,秦旧,秦变更,2026-07-30 10:00:00,2026-07-30 10:00:00

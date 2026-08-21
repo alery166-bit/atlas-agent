@@ -1,0 +1,76 @@
+{
+  "index_patterns": ["atlas-company-asset-v1-*"],
+  "priority": 500,
+  "version": 1,
+  "_meta": {"owner": "atlas", "schema_version": "1.0", "document_grain": "one company asset or credential"},
+  "template": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "30s",
+      "index.mapping.total_fields.limit": 500
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "_routing": {"required": true},
+      "properties": {
+        "asset_id": {"type": "keyword"},
+        "atlas_company_id": {"type": "keyword"},
+        "company": {
+          "properties": {
+            "name": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "credit_code": {"type": "keyword"},
+            "source_company_id": {"type": "keyword"}
+          }
+        },
+        "asset_type": {"type": "keyword"},
+        "name": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 512}}},
+        "short_name": {"type": "keyword", "ignore_above": 256},
+        "number": {"type": "keyword", "ignore_above": 256},
+        "code": {"type": "keyword", "ignore_above": 256},
+        "classification_code": {"type": "keyword"},
+        "classification_name": {"type": "keyword"},
+        "status": {"type": "keyword"},
+        "description": {"type": "text"},
+        "issuer": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+        "applicant_names": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+        "inventor_names": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+        "agent_names": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+        "publish_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "application_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "register_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "start_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "end_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "amount": {
+          "properties": {
+            "raw": {"type": "keyword", "ignore_above": 128},
+            "value": {"type": "scaled_float", "scaling_factor": 100},
+            "currency": {"type": "keyword"},
+            "unit": {"type": "keyword"}
+          }
+        },
+        "image_uri": {"type": "keyword", "index": false},
+        "source": {
+          "properties": {
+            "system": {"type": "keyword"},
+            "table": {"type": "keyword"},
+            "record_id": {"type": "keyword"},
+            "company_id": {"type": "keyword"},
+            "source_updated_at": {"type": "date", "format": "strict_date_optional_time"}
+          }
+        },
+        "ingest": {
+          "properties": {
+            "batch_id": {"type": "keyword"},
+            "schema_version": {"type": "keyword"},
+            "content_hash": {"type": "keyword"},
+            "dedupe_key": {"type": "keyword"},
+            "ingested_at": {"type": "date", "format": "strict_date_optional_time"},
+            "deleted": {"type": "boolean"}
+          }
+        },
+        "extensions": {"type": "flattened"}
+      }
+    }
+  }
+}

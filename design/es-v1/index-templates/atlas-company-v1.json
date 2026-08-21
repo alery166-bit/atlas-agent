@@ -1,0 +1,153 @@
+{
+  "index_patterns": ["atlas-company-v1-*"],
+  "priority": 500,
+  "version": 1,
+  "_meta": {"owner": "atlas", "schema_version": "1.0", "document_grain": "one company"},
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "refresh_interval": "5s",
+      "index.mapping.total_fields.limit": 500
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "_source": {"enabled": true},
+      "properties": {
+        "atlas_company_id": {"type": "keyword"},
+        "identity": {
+          "properties": {
+            "source_company_id": {"type": "keyword"},
+            "credit_code": {"type": "keyword"},
+            "register_no": {"type": "keyword"},
+            "organization_code": {"type": "keyword"},
+            "taxpayer_no": {"type": "keyword"},
+            "taxpayer_type": {"type": "keyword"}
+          }
+        },
+        "name": {
+          "properties": {
+            "canonical": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "short": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 128}}},
+            "english": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "aliases": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}}
+          }
+        },
+        "registration": {
+          "properties": {
+            "company_type": {"type": "keyword"},
+            "company_type_code": {"type": "keyword"},
+            "status": {"type": "keyword"},
+            "legal_representative": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 128}}},
+            "authority": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "open_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+            "check_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+            "business_start": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+            "business_end": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+            "cancel_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+            "revocation_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+            "business_scope": {"type": "text"}
+          }
+        },
+        "capital": {
+          "properties": {
+            "registered_raw": {"type": "keyword", "ignore_above": 128},
+            "registered_value": {"type": "scaled_float", "scaling_factor": 100},
+            "paid_raw": {"type": "keyword", "ignore_above": 128},
+            "paid_value": {"type": "scaled_float", "scaling_factor": 100},
+            "currency": {"type": "keyword"},
+            "unit": {"type": "keyword"}
+          }
+        },
+        "addresses": {
+          "properties": {
+            "registered": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 512}}},
+            "report": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 512}}},
+            "business": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 512}}},
+            "geo": {"type": "geo_point"},
+            "region_code": {"type": "keyword"},
+            "province": {"type": "keyword"},
+            "city": {"type": "keyword"},
+            "district": {"type": "keyword"}
+          }
+        },
+        "industry": {
+          "properties": {
+            "source_value": {"type": "keyword", "ignore_above": 512},
+            "industry_id": {"type": "keyword"},
+            "level1_code": {"type": "keyword"},
+            "level1_name": {"type": "keyword"},
+            "level2_code": {"type": "keyword"},
+            "level2_name": {"type": "keyword"},
+            "level3_code": {"type": "keyword"},
+            "level3_name": {"type": "keyword"}
+          }
+        },
+        "business_profile": {
+          "properties": {
+            "brief": {"type": "text"},
+            "insured_num": {"type": "integer"},
+            "websites": {"type": "keyword", "ignore_above": 512},
+            "logo_uri": {"type": "keyword", "index": false}
+          }
+        },
+        "control": {
+          "properties": {
+            "actual_controller": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "actual_path": {"type": "object", "enabled": false}
+          }
+        },
+        "risk_projection": {
+          "properties": {
+            "legacy_score": {"type": "scaled_float", "scaling_factor": 100},
+            "legacy_labels": {"type": "keyword"},
+            "legacy_overall_rating": {"type": "object", "enabled": false},
+            "current_original_score": {"type": "scaled_float", "scaling_factor": 100},
+            "current_manual_score": {"type": "scaled_float", "scaling_factor": 100},
+            "current_effective_score": {"type": "scaled_float", "scaling_factor": 100},
+            "current_band": {"type": "keyword"},
+            "current_labels": {"type": "keyword"},
+            "score_version": {"type": "keyword"},
+            "scored_at": {"type": "date", "format": "strict_date_optional_time"}
+          }
+        },
+        "projection_stats": {
+          "properties": {
+            "relation_count": {"type": "long"},
+            "event_count": {"type": "long"},
+            "risk_event_count": {"type": "long"},
+            "asset_count": {"type": "long"},
+            "public_intel_count": {"type": "long"},
+            "latest_event_at": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"}
+          }
+        },
+        "freshness": {
+          "properties": {
+            "business_updated_at": {"type": "date", "format": "strict_date_optional_time"},
+            "event_updated_at": {"type": "date", "format": "strict_date_optional_time"},
+            "public_intel_updated_at": {"type": "date", "format": "strict_date_optional_time"},
+            "contact_updated_at": {"type": "date", "format": "strict_date_optional_time"}
+          }
+        },
+        "source": {
+          "properties": {
+            "system": {"type": "keyword"},
+            "table": {"type": "keyword"},
+            "record_id": {"type": "keyword"},
+            "source_updated_at": {"type": "date", "format": "strict_date_optional_time"}
+          }
+        },
+        "ingest": {
+          "properties": {
+            "batch_id": {"type": "keyword"},
+            "schema_version": {"type": "keyword"},
+            "content_hash": {"type": "keyword"},
+            "ingested_at": {"type": "date", "format": "strict_date_optional_time"},
+            "deleted": {"type": "boolean"}
+          }
+        },
+        "extensions": {"type": "flattened"}
+      }
+    }
+  }
+}

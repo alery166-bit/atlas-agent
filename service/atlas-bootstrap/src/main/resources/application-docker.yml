@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: ${ATLAS_DB_URL:jdbc:postgresql://postgres:5432/atlas}
+    username: ${ATLAS_DB_USERNAME:atlas}
+    password: ${ATLAS_DB_PASSWORD:atlas}
+    driver-class-name: org.postgresql.Driver
+
+atlas:
+  runtime:
+    worker-concurrency: ${ATLAS_WORKER_CONCURRENCY:2}
+  storage:
+    root: ${ATLAS_STORAGE_ROOT:/data/files}
+  report:
+    template-path: ${ATLAS_REPORT_TEMPLATE:/data/template.docx}
+    previous-root: ${ATLAS_PREVIOUS_REPORT_ROOT:/data/previous-reports}
+    template-alias: report-v1
+  data:
+    provider: ${ATLAS_DATA_PROVIDER:offline}
+    offline:
+      root: ${ATLAS_COMPANY_DATA_ROOT:/data/company-data}
+      json-files:
+        - /data/乾道投资控股集团有限公司.json
+        - /data/北京童程童慧科技有限公司.json

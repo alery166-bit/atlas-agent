@@ -1,0 +1,1307 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas 企业情报 Agent · 完整平台原型</title>
+  <style>
+    :root{--bg:#f3f4f1;--surface:#fffefb;--surface2:#f8f8f5;--ink:#191b1d;--text:#3b3f42;--muted:#73787b;--faint:#a4a8a6;--line:#dfe0db;--line2:#cdd0c8;--blue:#3157f6;--blue2:#2645c5;--blueSoft:#edf0ff;--green:#23774f;--greenSoft:#e9f6ee;--red:#b64a38;--redSoft:#fff0ed;--amber:#a6671e;--amberSoft:#fff5e5;--purple:#7654c6;--purpleSoft:#f2edff;--nav:#202326;--nav2:#2b2f32;--shadow:0 16px 42px rgba(31,35,31,.08);--radius:13px}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}button,input,textarea,select{font:inherit}button{color:inherit}a{color:inherit;text-decoration:none}.hidden{display:none!important}
+    .app{height:100vh;display:grid;grid-template-columns:246px minmax(0,1fr);overflow:hidden}.sidebar{min-height:0;background:var(--nav);color:#eef0ed;display:grid;grid-template-rows:68px minmax(0,1fr) auto;border-right:1px solid #34383a}.brand{display:flex;align-items:center;gap:11px;padding:0 20px;font-weight:760;letter-spacing:-.02em;border-bottom:1px solid #34383a}.brand-mark{width:28px;height:28px;display:grid;place-items:center;border-radius:9px 9px 9px 3px;background:#fff;color:var(--nav);font-size:12px;font-weight:850}.nav-scroll{overflow:auto;padding:16px 11px 20px;scrollbar-width:thin}.nav-group{margin-bottom:20px}.nav-label{padding:0 10px 7px;color:#858b8c;font-size:9px;font-weight:800;letter-spacing:.14em}.nav-item{width:100%;display:flex;align-items:center;gap:10px;margin:2px 0;padding:9px 10px;border:0;border-radius:9px;background:transparent;color:#bfc4c3;cursor:pointer;text-align:left;font-size:12px;transition:.16s}.nav-item:hover{background:#292d30;color:#fff}.nav-item.active{background:#34383c;color:#fff}.nav-icon{width:23px;height:23px;display:grid;place-items:center;border:1px solid #44494b;border-radius:7px;color:#9da4a4;font-size:9px;font-weight:800}.nav-item.active .nav-icon{border-color:#667ef9;background:var(--blue);color:#fff}.nav-badge{margin-left:auto;padding:2px 6px;border-radius:99px;background:#3a3f42;color:#aeb4b3;font-size:9px}.sidebar-foot{padding:13px;border-top:1px solid #34383a}.profile{display:flex;align-items:center;gap:9px;padding:8px;border-radius:9px}.profile-avatar{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:#d9dbd7;color:#333;font-size:11px;font-weight:750}.profile-name{font-size:11px}.profile-role{margin-top:2px;color:#858b8c;font-size:9px}
+    .main{min-width:0;min-height:0;display:grid;grid-template-rows:60px minmax(0,1fr)}.topbar{display:grid;grid-template-columns:auto minmax(240px,480px) auto;align-items:center;gap:24px;padding:0 24px;border-bottom:1px solid var(--line);background:rgba(255,254,251,.91);backdrop-filter:blur(16px);z-index:5}.mobile-menu{display:none}.breadcrumb{color:var(--muted);font-size:11px;white-space:nowrap}.global-search{position:relative}.global-search input{width:100%;height:36px;padding:0 38px 0 14px;border:1px solid var(--line);border-radius:10px;background:#f8f8f5;color:var(--text);font-size:11px;outline:0}.global-search input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blueSoft);background:white}.search-key{position:absolute;right:9px;top:8px;padding:2px 5px;border:1px solid var(--line);border-radius:5px;color:var(--faint);font-size:9px}.top-actions{display:flex;gap:7px;justify-content:flex-end}.icon-btn,.btn,.chip,.tab,.seg-btn{border:1px solid var(--line2);background:white;border-radius:8px;cursor:pointer;transition:.16s}.icon-btn{width:34px;height:34px}.icon-btn:hover,.btn:hover{border-color:#aaaea7;transform:translateY(-1px)}.page-host{min-width:0;min-height:0;overflow:auto;scrollbar-width:thin}.page{min-height:100%;padding:30px 34px 60px}.page.narrow{max-width:1260px;margin:0 auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:25px}.page-title{margin:0 0 7px;font-family:"Songti SC","STSong",Georgia,serif;font-size:28px;line-height:1.2;letter-spacing:-.025em}.page-desc{margin:0;color:var(--muted);font-size:11px;line-height:1.6}.head-actions{display:flex;align-items:center;gap:8px}.btn{padding:9px 12px;font-size:11px}.btn.primary{border-color:var(--blue);background:var(--blue);color:white}.btn.primary:hover{border-color:var(--blue2);background:var(--blue2)}.btn.danger{color:var(--red);border-color:#efc8c0;background:var(--redSoft)}.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}.btn.small{padding:6px 8px;font-size:10px}.status{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:6px;font-size:9px;font-weight:700}.status.green{color:var(--green);background:var(--greenSoft)}.status.blue{color:var(--blue);background:var(--blueSoft)}.status.amber{color:var(--amber);background:var(--amberSoft)}.status.red{color:var(--red);background:var(--redSoft)}.status.gray{color:var(--muted);background:#eceeea}.dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}.metric{padding:17px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}.metric-label{color:var(--muted);font-size:10px;margin-bottom:11px}.metric-value{font-family:Georgia,serif;font-size:25px;line-height:1}.metric-meta{margin-top:8px;color:var(--faint);font-size:9px}.metric-meta.good{color:var(--green)}.metric-meta.warn{color:var(--amber)}.panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 17px;border-bottom:1px solid var(--line)}.panel-title{font-size:12px;font-weight:750}.panel-subtitle{margin-top:3px;color:var(--muted);font-size:9px}.panel-body{padding:17px}.grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.split{display:grid;grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr);gap:15px}.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:13px}.field,.select{height:34px;border:1px solid var(--line);border-radius:8px;background:white;color:var(--text);outline:0;font-size:10px}.field{min-width:220px;padding:0 11px}.select{padding:0 25px 0 10px}.field:focus,.select:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blueSoft)}.spacer{flex:1}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;font-size:10px}.table th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line2);color:var(--muted);font-weight:700;white-space:nowrap;background:#fbfbf8}.table td{padding:12px;border-bottom:1px solid var(--line);color:var(--text);vertical-align:middle}.table tbody tr:hover{background:#fafaf7}.table tbody tr:last-child td{border-bottom:0}.entity{display:flex;align-items:center;gap:9px}.entity-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:var(--blueSoft);color:var(--blue);font-size:9px;font-weight:850}.entity-name{font-weight:700;font-size:10px}.entity-meta{margin-top:3px;color:var(--faint);font-size:9px}.progress{height:5px;border-radius:99px;background:#e8e9e5;overflow:hidden}.progress>span{display:block;height:100%;border-radius:99px;background:var(--blue)}.progress.green>span{background:var(--green)}.progress.amber>span{background:var(--amber)}
+    .agent-page{min-height:100%;padding:0}.agent-chat{width:min(900px,calc(100% - 44px));margin:0 auto;padding:38px 0 180px}.date{width:max-content;margin:0 auto 30px;color:var(--faint);font-size:9px;letter-spacing:.08em}.turn{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;margin-bottom:27px}.turn.user{display:flex;justify-content:flex-end}.user-bubble{max-width:680px;padding:13px 16px;border-radius:16px 16px 4px 16px;background:#292d30;color:#f8f9f6;font-size:13px;line-height:1.72}.agent-avatar{width:31px;height:31px;display:grid;place-items:center;border-radius:10px 10px 10px 3px;background:var(--blue);color:white;font-size:11px;font-weight:850}.agent-name{height:31px;display:flex;align-items:center;gap:8px;margin-bottom:4px;color:var(--muted);font-size:10px;font-weight:700}.prose{color:var(--text);font-size:13px;line-height:1.76}.prose p{margin:0 0 10px}.activity{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.65);overflow:hidden}.activity summary{list-style:none;padding:9px 12px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:650}.activity summary::-webkit-details-marker{display:none}.activity summary:before{content:"＋";display:inline-block;width:17px;color:var(--blue)}.activity[open] summary:before{content:"－"}.activity-body{padding:0 12px 12px 29px;color:var(--muted);font-size:10px;line-height:1.9}.result{margin-top:12px;border:1px solid var(--line2);border-radius:14px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden}.result-head{display:flex;justify-content:space-between;gap:18px;padding:19px;border-bottom:1px solid var(--line)}.result-kicker{margin-bottom:6px;color:var(--blue);font-size:9px;font-weight:850;letter-spacing:.1em}.result h3{margin:0 0 5px;font-family:"Songti SC","STSong",Georgia,serif;font-size:21px}.result-meta{color:var(--muted);font-size:9px}.score{padding:8px 10px;border:1px solid #efc9c1;border-radius:8px;background:var(--redSoft);color:var(--red);text-align:right;font-size:9px}.score strong{display:block;font-size:21px}.result-summary{padding:16px 19px;border-bottom:1px solid var(--line);font-family:"Songti SC","STSong",Georgia,serif;font-size:15px;line-height:1.8}.finding{display:grid;grid-template-columns:7px minmax(0,1fr) auto;gap:11px;padding:14px 19px;border-bottom:1px solid var(--line)}.finding:last-child{border-bottom:0}.severity{width:7px;height:7px;margin-top:6px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px var(--redSoft)}.severity.amber{background:var(--amber);box-shadow:0 0 0 4px var(--amberSoft)}.finding-title{font-size:12px;font-weight:750}.finding-copy{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.6}.citation{align-self:start;border:0;background:transparent;color:var(--blue);cursor:pointer;font-size:9px}.evidence-inline{display:none;grid-column:2/4;margin-top:4px;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);font-size:9px;color:var(--muted);line-height:1.8}.finding.open .evidence-inline{display:block}.result-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 19px;border-top:1px solid var(--line);background:#fbfbf8}.result-foot small{color:var(--muted);font-size:9px}.composer-dock{position:fixed;z-index:9;left:246px;right:0;bottom:0;padding:35px 20px 16px;background:linear-gradient(to top,var(--bg) 70%,rgba(243,244,241,0))}.composer-shell{width:min(900px,100%);margin:auto}.prompt-chips{display:flex;gap:6px;padding:0 4px 8px;overflow:auto}.chip{flex:0 0 auto;padding:6px 8px;border-radius:99px;color:var(--muted);background:rgba(255,255,255,.82);font-size:9px}.composer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;padding:10px 10px 10px 14px;border:1px solid var(--line2);border-radius:15px;background:white;box-shadow:0 12px 34px rgba(32,36,31,.11)}.composer:focus-within{border-color:var(--blue);box-shadow:0 0 0 4px var(--blueSoft),0 12px 34px rgba(32,36,31,.11)}.composer textarea{height:46px;max-height:120px;resize:none;border:0;outline:0;background:transparent;color:var(--text);font-size:12px;line-height:1.55}.send{width:37px;height:37px;border:0;border-radius:10px;background:var(--blue);color:white;cursor:pointer;font-size:16px}.composer-note{text-align:center;padding-top:6px;color:var(--faint);font-size:8px}
+    .company-hero{display:grid;grid-template-columns:1fr auto;gap:18px;padding:22px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin-bottom:15px}.company-name{margin:0 0 8px;font-family:"Songti SC","STSong",Georgia,serif;font-size:23px}.company-meta{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:10px}.risk-ring{width:74px;height:74px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--red) 0 88%,#e8e9e4 88%);position:relative}.risk-ring:after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--surface)}.risk-ring span{z-index:1;text-align:center;color:var(--red);font-size:9px}.risk-ring strong{display:block;font-size:19px}.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:15px}.tab{border:0;border-radius:0;background:transparent;padding:10px 12px;color:var(--muted);font-size:10px;border-bottom:2px solid transparent}.tab.active{color:var(--blue);border-bottom-color:var(--blue)}.fact-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}.fact{display:grid;grid-template-columns:90px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:10px}.fact-label{color:var(--muted)}.timeline{position:relative;padding-left:18px}.timeline:before{content:"";position:absolute;left:4px;top:7px;bottom:7px;width:1px;background:var(--line2)}.event{position:relative;padding:0 0 18px 10px}.event:before{content:"";position:absolute;left:-17px;top:5px;width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px var(--blueSoft)}.event-title{font-size:10px;font-weight:700}.event-copy{margin-top:4px;color:var(--muted);font-size:9px;line-height:1.55}.event-date{margin-top:4px;color:var(--faint);font-size:8px}
+    .list{display:grid}.list-item{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:11px;align-items:center;padding:12px 13px;border-bottom:1px solid var(--line);cursor:pointer}.list-item:hover,.list-item.selected{background:#f6f7f3}.list-item:last-child{border-bottom:0}.list-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:var(--blueSoft);color:var(--blue);font-size:9px;font-weight:850}.list-name{font-size:10px;font-weight:750}.list-copy{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.5}.detail-section{padding-bottom:17px;margin-bottom:17px;border-bottom:1px solid var(--line)}.detail-section:last-child{border-bottom:0;margin-bottom:0}.detail-title{margin-bottom:10px;font-size:10px;font-weight:750}.definition{display:grid;grid-template-columns:110px 1fr;gap:9px;padding:7px 0;font-size:9px}.definition dt{color:var(--muted)}.definition dd{margin:0;color:var(--text)}.tag-row{display:flex;gap:6px;flex-wrap:wrap}.tag{padding:4px 7px;border:1px solid var(--line);border-radius:6px;color:var(--muted);background:white;font-size:8px}.tag.blue{color:var(--blue);border-color:#ccd3ff;background:var(--blueSoft)}.tag.purple{color:var(--purple);border-color:#ddd2ff;background:var(--purpleSoft)}.toggle{width:35px;height:20px;padding:2px;border:0;border-radius:99px;background:#d8dad5;cursor:pointer}.toggle:after{content:"";display:block;width:16px;height:16px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,.15);transition:.2s}.toggle.on{background:var(--green)}.toggle.on:after{transform:translateX(15px)}
+    .flow{display:flex;align-items:center;gap:7px;overflow:auto;padding:5px 0 3px}.flow-step{flex:0 0 auto;min-width:104px;padding:10px;border:1px solid var(--line);border-radius:9px;background:white;font-size:9px;text-align:center}.flow-arrow{color:var(--faint)}.health-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}.health-card{padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}.health-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.health-name{font-size:10px;font-weight:750}.health-value{font-family:Georgia,serif;font-size:21px}.health-meta{margin-top:7px;color:var(--muted);font-size:9px}.thresholds{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.threshold{padding:12px;border-left:3px solid var(--green);background:#f8faf7;border-radius:3px 8px 8px 3px}.threshold.medium{border-color:var(--amber);background:#fffaf1}.threshold.high{border-color:var(--red);background:#fff6f4}.threshold-name{font-size:9px;font-weight:750}.threshold-value{margin-top:7px;font-family:Georgia,serif;font-size:19px}.template-preview{min-height:500px;padding:38px 45px;border:1px solid var(--line);background:#fff;box-shadow:0 10px 30px rgba(31,35,31,.06)}.template-preview h2{font-family:"Songti SC","STSong",Georgia,serif;text-align:center;font-size:20px}.fake-line{height:7px;margin:10px 0;border-radius:4px;background:#eaebe7}.fake-line.short{width:60%}.fake-line.tiny{width:35%}.route-card{padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface2)}.route-title{display:flex;justify-content:space-between;gap:10px;font-size:10px;font-weight:750}.route-copy{margin-top:8px;color:var(--muted);font-size:9px;line-height:1.55}.chart{height:210px;display:flex;align-items:flex-end;gap:10px;padding:20px 8px 24px;border-bottom:1px solid var(--line);position:relative}.bar-group{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;position:relative}.bar{width:9px;min-height:3px;border-radius:3px 3px 0 0;background:var(--blue)}.bar.alt{background:#aeb8f9}.bar-label{position:absolute;bottom:-18px;color:var(--faint);font-size:8px}.matrix{width:100%;border-collapse:collapse;font-size:9px}.matrix th,.matrix td{padding:10px;border:1px solid var(--line);text-align:center}.matrix th:first-child,.matrix td:first-child{text-align:left}.allow{color:var(--green);font-weight:850}.deny{color:#c6c9c4}.drawer{position:fixed;z-index:30;top:0;right:0;width:min(470px,94vw);height:100vh;background:var(--surface);border-left:1px solid var(--line);box-shadow:-20px 0 50px rgba(30,34,30,.14);transform:translateX(102%);transition:.26s;display:grid;grid-template-rows:62px minmax(0,1fr) auto}.drawer.open{transform:translateX(0)}.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:0 20px;border-bottom:1px solid var(--line)}.drawer-title{font-size:13px;font-weight:750}.drawer-body{overflow:auto;padding:20px}.drawer-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--line)}.overlay{position:fixed;z-index:25;inset:0;background:rgba(18,20,21,.25);opacity:0;pointer-events:none;transition:.22s}.overlay.open{opacity:1;pointer-events:auto}.toast{position:fixed;z-index:50;left:50%;bottom:25px;transform:translate(-50%,12px);opacity:0;pointer-events:none;padding:10px 14px;border-radius:8px;background:#222528;color:white;box-shadow:0 12px 30px rgba(0,0,0,.18);font-size:10px;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+    .button-group{display:flex;align-items:center;gap:7px}
+
+    /* VISUAL POLISH 2.0 — unified product surface */
+    :root{--bg:#f1f4f6;--surface:#ffffff;--surface2:#f7f9fb;--ink:#162033;--text:#364152;--muted:#6f7a8a;--faint:#9ca6b4;--line:#e4e8ee;--line2:#d5dbe4;--blue:#3f5ff5;--blue2:#2f4cda;--blueSoft:#eef1ff;--nav:#151c28;--nav2:#1d2635;--shadow:0 18px 50px rgba(31,45,72,.08);--radius:15px}
+    ::selection{background:#dce3ff;color:#192a70}
+    body{background:var(--bg);letter-spacing:.005em}
+    .app{grid-template-columns:252px minmax(0,1fr)}
+    .sidebar{position:relative;background:linear-gradient(180deg,#141b27 0%,#192231 58%,#151d29 100%);border-right:1px solid rgba(255,255,255,.04);box-shadow:10px 0 35px rgba(18,27,43,.09)}
+    .sidebar:after{content:"";position:absolute;inset:0 0 auto;height:180px;pointer-events:none;background:radial-gradient(circle at 20% 0,rgba(84,109,255,.16),transparent 65%)}
+    .brand{position:relative;z-index:1;height:72px;padding:0 19px;border-bottom-color:rgba(255,255,255,.07);font-size:13px;letter-spacing:-.01em}
+    .brand-mark{width:31px;height:31px;border-radius:10px 10px 10px 4px;background:#526df8;color:white;box-shadow:0 7px 18px rgba(61,87,239,.33)}
+    .nav-scroll{position:relative;z-index:1;padding:18px 12px 24px}
+    .nav-group{margin-bottom:15px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.055)}
+    .nav-group:last-child{border-bottom:0}
+    .nav-label{padding:0 11px 8px;color:#6f7b8b;font-size:8px;letter-spacing:.17em}
+    .nav-item{position:relative;gap:11px;margin:3px 0;padding:10px 11px;border-radius:10px;color:#aeb8c7;font-size:11px;overflow:hidden}
+    .nav-item:before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:2px;border-radius:0 2px 2px 0;background:#6e83ff;opacity:0;transform:translateX(-2px);transition:.18s}
+    .nav-item:hover{background:rgba(255,255,255,.055);color:#f7f9fc}
+    .nav-item.active{background:linear-gradient(90deg,rgba(84,109,248,.2),rgba(84,109,248,.09));color:white;box-shadow:inset 0 0 0 1px rgba(111,134,255,.13)}
+    .nav-item.active:before{opacity:1;transform:none}
+    .nav-icon{width:24px;height:24px;border-color:rgba(255,255,255,.11);border-radius:7px;color:#8995a5;background:rgba(255,255,255,.025)}
+    .nav-item.active .nav-icon{border-color:rgba(126,146,255,.42);background:#4b66ee;box-shadow:0 5px 12px rgba(48,70,196,.3)}
+    .nav-badge{background:rgba(255,255,255,.07);color:#98a3b3}
+    .sidebar-foot{position:relative;z-index:1;padding:14px;border-top-color:rgba(255,255,255,.07)}
+    .profile{padding:9px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.035)}
+    .profile-avatar{background:linear-gradient(135deg,#dfe4ee,#aeb8c8);color:#1c2635}
+    .profile-role{color:#7f8b9b}
+    .main{grid-template-rows:64px minmax(0,1fr)}
+    .topbar{padding:0 28px;border-bottom-color:#e6eaf0;background:rgba(255,255,255,.88);box-shadow:0 1px 0 rgba(29,44,72,.025);backdrop-filter:blur(20px) saturate(150%)}
+    .breadcrumb{color:#7b8593;font-weight:600}
+    .global-search input{height:38px;padding-left:15px;border-color:#e1e6ed;border-radius:11px;background:#f5f7fa;transition:.18s}
+    .global-search input:hover{background:white;border-color:#d3d9e2}
+    .search-key{top:9px;border-color:#dce1e8;background:white;color:#9aa4b2}
+    .page-host{background:radial-gradient(circle at 82% -8%,rgba(79,104,242,.055),transparent 33%),linear-gradient(180deg,#f4f6f8 0%,#f0f3f5 100%)}
+    .page{padding:34px 38px 70px;animation:pageIn .24s ease-out}
+    .page.narrow{max-width:1320px}
+    @keyframes pageIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .page-head{margin-bottom:28px}
+    .page-title{margin-bottom:8px;font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:29px;font-weight:760;letter-spacing:-.035em}
+    .page-desc{max-width:720px;color:#748091;font-size:11px}
+    .head-actions{gap:9px}
+    .icon-btn,.btn,.chip,.tab,.seg-btn{border-color:#dce1e8;box-shadow:0 1px 2px rgba(26,39,64,.025)}
+    .icon-btn:hover,.btn:hover{border-color:#c4ccd7;box-shadow:0 5px 12px rgba(33,47,72,.07)}
+    .btn{padding:9px 13px;border-radius:9px;font-weight:650}
+    .btn.primary{border-color:#405ff2;background:#405ff2;box-shadow:0 6px 14px rgba(59,84,225,.19)}
+    .btn.primary:hover{background:#304fdc;box-shadow:0 8px 18px rgba(52,75,207,.24)}
+    .btn.ghost{box-shadow:none}
+    .status{padding:4px 8px;border:1px solid transparent;border-radius:99px}
+    .status.green{border-color:#d9ecdf}.status.blue{border-color:#dfe4ff}.status.amber{border-color:#f1e2c8}.status.red{border-color:#f1d8d3}.status.gray{border-color:#e2e5e9}
+    .metrics{gap:14px;margin-bottom:20px}
+    .metric{position:relative;min-height:114px;padding:19px 19px 17px;border-color:#e3e8ee;box-shadow:0 8px 25px rgba(34,48,74,.045);overflow:hidden;transition:.2s}
+    .metric:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 4px 4px 0;background:#526cf5}
+    .metric:nth-child(2):before{background:#e3a33c}.metric:nth-child(3):before{background:#37a16e}.metric:nth-child(4):before{background:#8b6bd9}
+    .metric:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(34,48,74,.07)}
+    .metric-label{margin-bottom:13px;color:#778292;font-weight:600}
+    .metric-value{font-family:Inter,"PingFang SC",system-ui,sans-serif;font-size:27px;font-weight:720;letter-spacing:-.04em}
+    .metric-meta{margin-top:9px}
+    .panel{border-color:#e2e7ed;background:rgba(255,255,255,.97);box-shadow:0 8px 28px rgba(35,49,75,.045)}
+    .panel-head{min-height:56px;padding:16px 18px;border-bottom-color:#e8ebf0;background:linear-gradient(180deg,#fff,#fcfdfe)}
+    .panel-title{font-size:12px;letter-spacing:-.01em}
+    .panel-body{padding:19px}
+    .grid-2,.split{gap:17px}.grid-3{gap:15px}
+    .toolbar{gap:9px;margin-bottom:14px;padding:5px 0}
+    .field,.select{height:37px;border-color:#dde2e9;border-radius:9px;background:rgba(255,255,255,.92)}
+    .field:hover,.select:hover{border-color:#cbd2dc}
+    .table{font-size:10px}
+    .table th{position:sticky;top:0;z-index:1;padding:12px 13px;border-bottom-color:#dce2e9;background:#f7f9fb;color:#737f90;font-size:9px;letter-spacing:.025em}
+    .table td{height:52px;padding:12px 13px;border-bottom-color:#e8ebef}
+    .table tbody tr{transition:.14s}
+    .table tbody tr:hover{background:#f6f8fb}
+    .table tbody tr[data-open]{cursor:pointer}
+    .entity-icon,.list-icon{background:linear-gradient(145deg,#eef1ff,#e6ebff);box-shadow:inset 0 0 0 1px rgba(72,96,231,.08)}
+    .progress{height:6px;background:#edf0f3}
+    .agent-page{background:radial-gradient(circle at 50% 0,rgba(79,104,244,.075),transparent 34%)}
+    .agent-chat{width:min(920px,calc(100% - 48px));padding-top:42px}
+    .date{margin-bottom:34px;padding:5px 10px;border:1px solid #e2e6ec;border-radius:99px;background:rgba(255,255,255,.7);letter-spacing:.05em}
+    .turn{grid-template-columns:34px minmax(0,1fr);gap:13px;margin-bottom:30px}
+    .user-bubble{padding:14px 18px;border-radius:18px 18px 5px 18px;background:linear-gradient(135deg,#263246,#1c2534);box-shadow:0 9px 24px rgba(24,35,52,.14)}
+    .agent-avatar{width:33px;height:33px;border-radius:11px 11px 11px 4px;background:#4865ef;box-shadow:0 7px 16px rgba(56,80,213,.23)}
+    .agent-name{height:33px;color:#687588}
+    .activity{border-color:#e1e6ec;background:rgba(255,255,255,.75);box-shadow:0 5px 16px rgba(35,49,75,.03)}
+    .activity summary{padding:10px 13px}
+    .result{border-color:#dfe4ea;border-radius:17px;box-shadow:0 20px 55px rgba(34,48,75,.09)}
+    .result:before{content:"";display:block;height:3px;background:linear-gradient(90deg,#4c67ef,#8497ff 42%,#dfe4ff)}
+    .result-head{padding:20px 21px;background:linear-gradient(180deg,#fff,#fbfcff)}
+    .result-kicker{color:#4864eb}
+    .result h3{font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:21px;font-weight:750;letter-spacing:-.025em}
+    .score{min-width:98px;padding:9px 11px;border-color:#f0d3cd;border-radius:10px}
+    .score strong{margin:2px 0;font-family:Inter,system-ui,sans-serif;font-size:23px}
+    .result-summary{padding:18px 21px;background:#fbfcfe;font-size:15px}
+    .finding{padding:16px 21px;transition:.16s}
+    .finding:hover{background:#fafbfe}
+    .citation{padding:5px 7px;border-radius:7px;font-weight:650}
+    .citation:hover{background:var(--blueSoft)}
+    .evidence-inline{border-color:#e1e5eb;background:#f7f9fc}
+    .result-foot{padding:14px 21px;background:#f8fafc}
+    .composer-dock{left:252px;padding:42px 20px 18px;background:linear-gradient(to top,#f1f4f6 65%,rgba(241,244,246,0))}
+    .chip{border-color:#dde2e9;background:rgba(255,255,255,.9);box-shadow:0 3px 10px rgba(34,48,74,.035)}
+    .chip:hover{color:#3e58d7;border-color:#cfd7ff;background:#f6f7ff}
+    .composer{padding:11px 11px 11px 15px;border-color:#d9dfe7;border-radius:17px;box-shadow:0 16px 42px rgba(30,44,70,.12)}
+    .composer:focus-within{box-shadow:0 0 0 4px rgba(63,95,245,.12),0 18px 45px rgba(30,44,70,.14)}
+    .send{width:39px;height:39px;border-radius:11px;background:#405ff2;box-shadow:0 7px 15px rgba(52,78,215,.24)}
+    .company-hero{padding:24px;border-color:#e1e6ec;background:linear-gradient(135deg,#fff 55%,#f5f7ff);box-shadow:0 10px 30px rgba(34,48,74,.055)}
+    .company-name{font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:24px;font-weight:750;letter-spacing:-.03em}
+    .risk-ring{box-shadow:0 8px 22px rgba(182,74,56,.1)}
+    .tabs{gap:4px}.tab{padding:11px 14px;font-weight:650}.tab.active{background:linear-gradient(180deg,transparent,#f1f4ff)}
+    .list-item{padding:13px 14px;transition:.14s}
+    .list-item:hover{background:#f7f9fc}.list-item.selected{background:#f2f5ff;box-shadow:inset 3px 0 #4d67ee}
+    .tag{border-color:#dfe4e9;border-radius:99px;background:#fafbfc}
+    .health-card{border-color:#e2e7ed;box-shadow:0 8px 25px rgba(34,48,74,.04)}
+    .flow-step{border-color:#dde3ea;border-radius:10px;background:#fbfcfe;box-shadow:0 3px 10px rgba(34,48,74,.03)}
+    .route-card{border-color:#e1e6ec;background:#f8fafc}
+    .template-preview{border-color:#dfe3e8;border-radius:4px;box-shadow:0 18px 45px rgba(31,43,66,.09)}
+    .drawer{width:min(500px,94vw);border-left-color:#e1e5eb;box-shadow:-28px 0 70px rgba(24,35,55,.18)}
+    .drawer-head{height:66px;padding:0 23px;background:#fbfcfe}.drawer-body{padding:23px}.drawer-foot{padding:15px 23px;background:#fbfcfe}
+    .overlay{background:rgba(16,24,38,.32);backdrop-filter:blur(2px)}
+    .toast{padding:11px 16px;border-radius:10px;background:#1b2534;box-shadow:0 16px 38px rgba(15,24,39,.24)}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+    /* READABILITY PASS 3.0 — optimized for sustained operations work */
+    :root{--text:#2f3a4a;--muted:#596679;--faint:#7f8b9a;--line:#dfe4ea;--line2:#cdd5df}
+    body{font-family:"Segoe UI","Microsoft YaHei UI","Microsoft YaHei",Arial,sans-serif;font-size:14px;line-height:1.55}
+    button,input,textarea,select{font-family:inherit}
+    .app{grid-template-columns:264px minmax(0,1fr)}
+    .brand{font-size:14px}.brand-mark{font-size:13px}
+    .nav-label{font-size:10px;line-height:1.4}
+    .nav-item{min-height:44px;padding:10px 12px;font-size:13px;line-height:1.4}
+    .nav-icon{width:26px;height:26px;font-size:11px}
+    .nav-badge{padding:2px 7px;font-size:10px}
+    .profile-name{font-size:13px;font-weight:650}.profile-role{font-size:11px}
+    .topbar{min-height:66px}
+    .breadcrumb{font-size:13px}
+    .global-search input{height:40px;font-size:13px}
+    .search-key{top:9px;padding:3px 6px;font-size:10px}
+    .icon-btn{width:38px;height:38px;font-size:13px}
+    .page{padding-top:38px}
+    .page.narrow{max-width:1380px}
+    .page-title{font-family:"Segoe UI","Microsoft YaHei UI","Microsoft YaHei",Arial,sans-serif;font-size:30px;line-height:1.3}
+    .page-desc{font-size:13px;line-height:1.75}
+    .btn{min-height:38px;padding:9px 14px;font-size:13px;line-height:1.4}
+    .btn.small{min-height:32px;padding:7px 10px;font-size:12px}
+    .status{padding:5px 9px;font-size:11px;line-height:1.25}
+    .dot{width:7px;height:7px}
+    .metric{min-height:126px;padding:21px 21px 18px}
+    .metric-label{font-size:13px;line-height:1.4}
+    .metric-value{font-family:"Segoe UI","Microsoft YaHei UI","Microsoft YaHei",Arial,sans-serif;font-size:30px;line-height:1.1}
+    .metric-meta{font-size:12px;line-height:1.5}
+    .panel-head{min-height:62px;padding:17px 20px}
+    .panel-title{font-size:14px;line-height:1.45}
+    .panel-subtitle{margin-top:4px;font-size:12px;line-height:1.55}
+    .panel-body{padding:21px}
+    .toolbar{min-height:48px;flex-wrap:wrap}
+    .field,.select{height:40px;font-size:13px}
+    .field{min-width:240px;padding:0 13px}.select{padding-left:12px}
+    .table{font-size:13px;line-height:1.5}
+    .table th{padding:13px 15px;font-size:12px;line-height:1.45}
+    .table td{height:58px;padding:14px 15px}
+    .entity{gap:11px}.entity-icon{width:36px;height:36px;font-size:11px}
+    .entity-name{font-size:13px}.entity-meta{margin-top:4px;font-size:11px;line-height:1.45}
+    .agent-chat{width:min(960px,calc(100% - 52px));padding-top:46px}
+    .date{font-size:11px}
+    .turn{grid-template-columns:36px minmax(0,1fr);gap:15px;margin-bottom:32px}
+    .user-bubble{max-width:720px;padding:15px 19px;font-size:15px;line-height:1.8}
+    .agent-avatar{width:35px;height:35px;font-size:13px}
+    .agent-name{height:35px;font-size:12px}
+    .prose{font-size:14px;line-height:1.85}
+    .activity summary{padding:11px 14px;font-size:12px}
+    .activity-body{padding:1px 14px 14px 31px;font-size:12px;line-height:1.9}
+    .result-kicker{font-size:11px}.result h3{font-size:23px;line-height:1.4}
+    .result-meta{font-size:11px}.score{font-size:11px;line-height:1.45}.score strong{font-size:25px}
+    .result-summary{padding:19px 22px;font-size:16px;line-height:1.9}
+    .finding{gap:13px;padding:18px 22px}
+    .finding-title{font-size:14px;line-height:1.55}
+    .finding-copy{margin-top:6px;font-size:13px;line-height:1.75}
+    .citation{font-size:12px;white-space:nowrap}
+    .evidence-inline{padding:12px 13px;font-size:12px;line-height:1.85}
+    .result-foot small{font-size:11px}
+    .composer-dock{left:264px;padding-bottom:20px}
+    .prompt-chips{gap:8px;padding-bottom:10px}.chip{padding:7px 10px;font-size:12px}
+    .composer{padding:12px 12px 12px 17px}
+    .composer textarea{height:52px;font-size:14px;line-height:1.7}
+    .send{width:42px;height:42px;font-size:18px}.composer-note{padding-top:7px;font-size:10px}
+    .company-name{font-size:26px;line-height:1.4}.company-meta{font-size:13px;line-height:1.6}
+    .risk-ring span{font-size:11px}.risk-ring strong{font-size:21px}
+    .tab{min-height:43px;padding:11px 15px;font-size:13px}
+    .fact{grid-template-columns:110px 1fr;gap:13px;padding:13px 0;font-size:13px;line-height:1.6}
+    .event-title{font-size:13px}.event-copy{font-size:12px;line-height:1.7}.event-date{font-size:11px}
+    .list-item{grid-template-columns:42px minmax(0,1fr) auto;gap:13px;padding:15px}
+    .list-icon{width:38px;height:38px;font-size:11px}.list-name{font-size:13px}.list-copy{font-size:12px;line-height:1.6}
+    .detail-title{font-size:13px}.definition{grid-template-columns:130px 1fr;gap:11px;padding:9px 0;font-size:12px;line-height:1.65}
+    .tag{padding:5px 9px;font-size:11px}
+    .flow-step{min-width:120px;padding:12px;font-size:12px;line-height:1.5}
+    .health-card{padding:19px}.health-name{font-size:13px}.health-value{font-family:inherit;font-size:27px;font-weight:700}.health-meta{font-size:12px;line-height:1.6}
+    .threshold{padding:14px}.threshold-name{font-size:12px}.threshold-value{font-family:inherit;font-size:24px;font-weight:700}
+    .template-preview h2{font-size:22px}.route-title{font-size:13px}.route-copy{font-size:12px;line-height:1.7}
+    .bar-label{font-size:10px}.matrix{font-size:12px;line-height:1.5}.matrix th,.matrix td{padding:12px}
+    .drawer-title{font-size:16px}.drawer-body{font-size:13px}.toast{font-size:13px}
+
+    /* CINEMATIC INTELLIGENCE THEME 4.0 */
+    :root{--bg:#070c14;--surface:#0f1825;--surface2:#111d2c;--ink:#f4f8ff;--text:#cbd6e6;--muted:#8c9bb0;--faint:#66758a;--line:rgba(146,171,205,.14);--line2:rgba(159,185,221,.22);--blue:#6d7cff;--blue2:#5264ef;--blueSoft:rgba(91,111,255,.14);--green:#2de2b2;--greenSoft:rgba(45,226,178,.11);--red:#ff6b79;--redSoft:rgba(255,107,121,.11);--amber:#ffbd63;--amberSoft:rgba(255,189,99,.11);--purple:#a987ff;--purpleSoft:rgba(169,135,255,.12);--nav:#070b12;--nav2:#0d1420;--shadow:0 24px 70px rgba(0,0,0,.28);--radius:16px}
+    html{color-scheme:dark}
+    body{background:#060a11;color:var(--ink)}
+    body:before{content:"";position:fixed;z-index:-1;inset:0;background:radial-gradient(circle at 72% 0,rgba(82,100,239,.18),transparent 28%),radial-gradient(circle at 18% 86%,rgba(30,195,202,.09),transparent 26%),#060a11}
+    ::selection{background:rgba(91,115,255,.45);color:white}
+    .app{grid-template-columns:276px minmax(0,1fr)}
+    .sidebar{background:linear-gradient(180deg,rgba(8,12,20,.98),rgba(8,14,24,.97));border-right:1px solid rgba(134,161,201,.11);box-shadow:14px 0 50px rgba(0,0,0,.2)}
+    .sidebar:before{content:"";position:absolute;left:0;right:0;top:0;height:220px;background:radial-gradient(circle at 30% 0,rgba(102,120,255,.22),transparent 60%);pointer-events:none}
+    .sidebar:after{height:1px;top:71px;background:linear-gradient(90deg,transparent,rgba(102,132,255,.55),transparent)}
+    .brand{height:72px;border-bottom-color:transparent;text-transform:uppercase;letter-spacing:.04em}
+    .brand-mark{position:relative;background:linear-gradient(145deg,#6f7fff,#4157e6);box-shadow:0 0 0 1px rgba(155,174,255,.35),0 0 28px rgba(76,99,242,.42);overflow:hidden}
+    .brand-mark:after{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.65),transparent 65%);transform:translateX(-60%) rotate(8deg);animation:brandSweep 6s ease-in-out infinite}
+    @keyframes brandSweep{0%,72%{transform:translateX(-70%) rotate(8deg)}88%,100%{transform:translateX(70%) rotate(8deg)}}
+    .nav-group{border-bottom-color:rgba(137,161,196,.08)}
+    .nav-label{color:#58677d;letter-spacing:.18em}
+    .nav-item{color:#8d9caf}
+    .nav-item:before{top:8px;bottom:8px;width:3px;background:linear-gradient(180deg,#7b89ff,#32d5ef);box-shadow:0 0 14px rgba(82,121,255,.75)}
+    .nav-item:hover{background:rgba(116,137,180,.07);color:#e9f1ff}
+    .nav-item.active{background:linear-gradient(90deg,rgba(90,108,255,.18),rgba(71,205,236,.045));box-shadow:inset 0 0 0 1px rgba(119,142,255,.16),0 9px 24px rgba(0,0,0,.12)}
+    .nav-icon{border-color:rgba(143,168,204,.13);background:rgba(129,153,190,.045);color:#6f7f95}
+    .nav-item.active .nav-icon{border-color:rgba(125,155,255,.42);background:linear-gradient(145deg,#6679ff,#4258e8);box-shadow:0 0 18px rgba(82,103,242,.32)}
+    .nav-badge{background:rgba(255,255,255,.06);color:#8898ad}
+    .sidebar-foot{border-top-color:rgba(137,161,196,.09)}
+    .profile{border-color:rgba(137,161,196,.1);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018))}
+    .profile-avatar{background:linear-gradient(145deg,#5268f2,#31b6d2);color:white;box-shadow:0 0 18px rgba(65,105,226,.23)}
+    .profile-role{color:#68788d}
+    .main{grid-template-rows:72px minmax(0,1fr)}
+    .topbar{min-height:72px;padding:0 30px;border-bottom-color:rgba(145,171,207,.11);background:rgba(7,12,20,.79);box-shadow:0 12px 40px rgba(0,0,0,.12);backdrop-filter:blur(24px) saturate(150%)}
+    .breadcrumb{color:#93a2b7;letter-spacing:.02em}
+    .global-search input{border-color:rgba(142,168,205,.15);background:rgba(17,28,43,.76);color:#e8effb;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+    .global-search input::placeholder{color:#627187}
+    .global-search input:hover{border-color:rgba(117,145,255,.32);background:rgba(20,32,49,.9)}
+    .global-search input:focus{border-color:#667aff;background:#111b2a;box-shadow:0 0 0 3px rgba(92,113,255,.13),0 0 26px rgba(75,99,230,.12)}
+    .search-key{border-color:rgba(147,174,210,.16);background:rgba(255,255,255,.04);color:#65748a}
+    .top-actions{align-items:center}
+    .system-live{display:inline-flex;align-items:center;gap:7px;margin-right:5px;padding:7px 10px;border:1px solid rgba(45,226,178,.18);border-radius:99px;background:rgba(45,226,178,.055);color:#6be8c6;font-size:10px;font-weight:700;letter-spacing:.08em;white-space:nowrap}
+    .system-live i{width:6px;height:6px;border-radius:50%;background:#2de2b2;box-shadow:0 0 0 4px rgba(45,226,178,.08),0 0 12px rgba(45,226,178,.65);animation:livePulse 2.2s ease-in-out infinite}
+    @keyframes livePulse{50%{opacity:.55;box-shadow:0 0 0 7px rgba(45,226,178,0),0 0 18px rgba(45,226,178,.8)}}
+    .icon-btn,.btn,.chip,.tab,.seg-btn{border-color:rgba(145,170,205,.16);background:rgba(18,29,44,.88);color:#b9c6d8;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+    .icon-btn:hover,.btn:hover{border-color:rgba(119,143,255,.42);background:#152238;color:#f4f7ff;box-shadow:0 8px 24px rgba(0,0,0,.18),0 0 18px rgba(82,104,232,.08)}
+    .btn.primary{border-color:rgba(127,148,255,.5);background:linear-gradient(135deg,#6b7cff,#465ae5);color:white;box-shadow:0 9px 24px rgba(66,86,220,.26),inset 0 1px 0 rgba(255,255,255,.22)}
+    .btn.primary:hover{background:linear-gradient(135deg,#7887ff,#5265ef);box-shadow:0 12px 30px rgba(66,86,220,.34),0 0 20px rgba(86,108,240,.16)}
+    .btn.danger{border-color:rgba(255,107,121,.27);background:rgba(255,107,121,.09);color:#ff8894}
+    .btn.ghost{background:transparent;color:#8292a8;box-shadow:none}
+    .page-host{position:relative;isolation:isolate;background:radial-gradient(circle at 75% -10%,rgba(85,102,238,.17),transparent 32%),radial-gradient(circle at 12% 115%,rgba(31,192,199,.08),transparent 28%),linear-gradient(180deg,#09101a,#080e17)}
+    .page-host:before{content:"";position:fixed;z-index:-1;inset:72px 0 0 276px;pointer-events:none;opacity:.22;background-image:linear-gradient(rgba(125,151,190,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(125,151,190,.055) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 78%)}
+    .page-host:after{content:"";position:fixed;z-index:-1;top:72px;left:276px;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(98,131,255,.65),rgba(52,215,235,.32),transparent);box-shadow:0 0 28px rgba(79,105,245,.28)}
+    .page{padding:42px 42px 74px}
+    .page-title{background:linear-gradient(90deg,#ffffff 0%,#d8e1f2 65%,#8695aa 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 10px 35px rgba(80,101,238,.09)}
+    .page-desc{color:#8291a6}
+    .status{border-color:rgba(255,255,255,.08);backdrop-filter:blur(8px)}
+    .status.green{color:#59e9c3;background:rgba(45,226,178,.1);border-color:rgba(45,226,178,.15)}
+    .status.blue{color:#93a1ff;background:rgba(109,124,255,.12);border-color:rgba(109,124,255,.17)}
+    .status.amber{color:#ffca7e;background:rgba(255,189,99,.1);border-color:rgba(255,189,99,.15)}
+    .status.red{color:#ff8c97;background:rgba(255,107,121,.1);border-color:rgba(255,107,121,.16)}
+    .status.gray{color:#91a0b4;background:rgba(137,156,183,.09);border-color:rgba(137,156,183,.12)}
+    .metric{border-color:rgba(140,166,202,.13);background:linear-gradient(145deg,rgba(18,29,44,.94),rgba(12,21,33,.94));box-shadow:0 18px 45px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.035)}
+    .metric:after{content:"";position:absolute;right:-24px;top:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(102,122,255,.14),transparent 68%)}
+    .metric:before{background:linear-gradient(180deg,#7887ff,#3fcde6);box-shadow:0 0 18px rgba(83,113,255,.42)}
+    .metric:nth-child(2):before{background:linear-gradient(180deg,#ffd27e,#ff9f58);box-shadow:0 0 18px rgba(255,174,88,.28)}
+    .metric:nth-child(3):before{background:linear-gradient(180deg,#62f0cb,#27b895);box-shadow:0 0 18px rgba(45,226,178,.26)}
+    .metric:nth-child(4):before{background:linear-gradient(180deg,#b99bff,#7a67e4);box-shadow:0 0 18px rgba(169,135,255,.25)}
+    .metric:hover{border-color:rgba(110,134,255,.27);box-shadow:0 24px 60px rgba(0,0,0,.24),0 0 30px rgba(74,98,224,.06)}
+    .metric-label{color:#8392a7}.metric-value{color:#f2f6ff;text-shadow:0 0 26px rgba(98,120,255,.13)}.metric-meta{color:#65758a}.metric-meta.good{color:#52dcb8}.metric-meta.warn{color:#ffc26e}
+    .panel{border-color:rgba(143,168,204,.13);background:linear-gradient(145deg,rgba(16,26,40,.96),rgba(11,20,32,.96));box-shadow:0 18px 52px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.028)}
+    .panel-head{border-bottom-color:rgba(145,171,207,.11);background:linear-gradient(180deg,rgba(255,255,255,.018),transparent)}
+    .panel-title{color:#e9f0fb}.panel-subtitle{color:#738399}.panel-body{color:#bac6d7}
+    .field,.select{border-color:rgba(145,170,205,.15);background:rgba(17,28,42,.9);color:#cbd6e5}
+    .field::placeholder{color:#65748a}.field:hover,.select:hover{border-color:rgba(118,145,255,.3)}
+    .field:focus,.select:focus{border-color:#6b7cff;box-shadow:0 0 0 3px rgba(109,124,255,.12),0 0 20px rgba(82,105,234,.08)}
+    .table th{border-bottom-color:rgba(145,171,207,.13);background:#101a28;color:#718199}
+    .table td{border-bottom-color:rgba(145,171,207,.09);color:#bdc9d9}
+    .table tbody tr:hover{background:rgba(99,119,255,.055)}
+    .entity-icon,.list-icon{background:linear-gradient(145deg,rgba(108,124,255,.19),rgba(44,196,222,.07));color:#91a0ff;box-shadow:inset 0 0 0 1px rgba(115,139,255,.15),0 0 18px rgba(79,104,230,.06)}
+    .entity-name,.list-name{color:#e1e8f4}.entity-meta,.list-copy{color:#708095}
+    .progress{background:rgba(145,169,203,.1)}.progress>span{background:linear-gradient(90deg,#5b6ef4,#36cae4);box-shadow:0 0 12px rgba(69,137,232,.25)}
+    .progress.green>span{background:linear-gradient(90deg,#28bd96,#59e7c2)}.progress.amber>span{background:linear-gradient(90deg,#f09b4f,#ffc46e)}
+    .agent-page{position:relative;background:radial-gradient(circle at 50% -15%,rgba(95,111,255,.2),transparent 35%)}
+    .agent-page:before{content:"";position:absolute;left:50%;top:0;width:min(980px,90%);height:180px;transform:translateX(-50%);pointer-events:none;background:linear-gradient(180deg,rgba(103,121,255,.05),transparent);clip-path:polygon(0 0,100% 0,82% 100%,18% 100%)}
+    .date{position:relative;border-color:rgba(103,226,193,.16);background:rgba(45,226,178,.055);color:#70cdb6;box-shadow:0 0 22px rgba(45,226,178,.05)}
+    .date:before{content:"";display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:#2de2b2;box-shadow:0 0 12px rgba(45,226,178,.75)}
+    .user-bubble{background:linear-gradient(135deg,#5265e8,#303ea2);box-shadow:0 16px 36px rgba(31,43,129,.28),inset 0 1px 0 rgba(255,255,255,.17)}
+    .agent-avatar{background:linear-gradient(145deg,#7282ff,#4359df);box-shadow:0 0 0 1px rgba(158,175,255,.32),0 0 26px rgba(73,99,237,.34)}
+    .agent-name{color:#8c9bb0}.prose{color:#c7d2e2}
+    .activity{border-color:rgba(142,169,205,.13);background:rgba(13,23,36,.82);box-shadow:0 12px 34px rgba(0,0,0,.12)}
+    .activity summary{color:#91a0b5}.activity-body{color:#79899f}
+    .result{position:relative;border-color:rgba(125,150,255,.2);background:linear-gradient(145deg,rgba(17,28,43,.98),rgba(10,19,31,.98));box-shadow:0 28px 80px rgba(0,0,0,.31),0 0 55px rgba(74,98,224,.07)}
+    .result:before{height:2px;background:linear-gradient(90deg,transparent,#7184ff 20%,#3ed2e8 55%,#50e2b9 82%,transparent);box-shadow:0 0 22px rgba(83,119,255,.4)}
+    .result-head{border-bottom-color:rgba(147,172,208,.11);background:radial-gradient(circle at 88% 10%,rgba(105,123,255,.12),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.018),transparent)}
+    .result-kicker{color:#7edcf0}.result h3{color:#f3f6fc}.result-meta{color:#718198}
+    .score{border-color:rgba(255,107,121,.23);background:rgba(255,107,121,.075);color:#ff8d98;box-shadow:inset 0 0 22px rgba(255,107,121,.025)}
+    .result-summary{border-bottom-color:rgba(147,172,208,.1);background:rgba(127,146,190,.025);color:#dce4ef}
+    .finding{border-bottom-color:rgba(147,172,208,.09)}.finding:hover{background:rgba(102,122,255,.045)}
+    .severity{background:#ff6b79;box-shadow:0 0 0 4px rgba(255,107,121,.1),0 0 14px rgba(255,107,121,.45)}
+    .severity.amber{background:#ffbd63;box-shadow:0 0 0 4px rgba(255,189,99,.09),0 0 14px rgba(255,189,99,.4)}
+    .finding-title{color:#e8eef8}.finding-copy{color:#8b9aaf}.citation{color:#7f91ff}.citation:hover{background:rgba(109,124,255,.11)}
+    .evidence-inline{border-color:rgba(145,171,207,.13);background:rgba(10,18,29,.72);color:#8f9db0}
+    .result-foot{border-top-color:rgba(145,171,207,.1);background:rgba(7,14,23,.54)}
+    .composer-dock{left:276px;background:linear-gradient(to top,#080e17 62%,rgba(8,14,23,0))}
+    .chip{border-color:rgba(143,168,204,.14);background:rgba(17,28,43,.82);color:#8292a8;backdrop-filter:blur(12px)}
+    .chip:hover{border-color:rgba(114,140,255,.35);background:rgba(85,105,235,.1);color:#b8c4ff}
+    .composer{border-color:rgba(128,153,255,.28);background:rgba(13,23,36,.94);box-shadow:0 24px 60px rgba(0,0,0,.34),0 0 45px rgba(76,100,232,.08),inset 0 1px 0 rgba(255,255,255,.035);backdrop-filter:blur(22px)}
+    .composer:focus-within{border-color:#7182ff;box-shadow:0 0 0 3px rgba(104,124,255,.12),0 28px 65px rgba(0,0,0,.37),0 0 50px rgba(76,100,232,.13)}
+    .composer textarea{color:#e4ebf6}.composer textarea::placeholder{color:#68778c}
+    .send{background:linear-gradient(145deg,#7284ff,#4156dd);box-shadow:0 0 0 1px rgba(150,170,255,.28),0 9px 22px rgba(52,72,198,.34)}
+    .composer-note{color:#526075}
+    .company-hero{border-color:rgba(137,163,201,.15);background:radial-gradient(circle at 85% 20%,rgba(255,107,121,.11),transparent 25%),radial-gradient(circle at 15% 0,rgba(95,113,255,.13),transparent 32%),linear-gradient(145deg,#111c2b,#0b1522);box-shadow:0 24px 60px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.035)}
+    .company-name{color:#f2f6fc}.company-meta{color:#8796aa}
+    .risk-ring{background:conic-gradient(#ff6b79 0 88%,rgba(151,173,205,.12) 88%);box-shadow:0 0 32px rgba(255,107,121,.12)}.risk-ring:after{background:#101a28}.risk-ring span{color:#ff8c97}
+    .tabs{border-bottom-color:rgba(145,171,207,.12)}.tab{color:#728298}.tab.active{color:#93a1ff;border-bottom-color:#7284ff;background:linear-gradient(180deg,transparent,rgba(95,113,255,.08))}
+    .fact{border-bottom-color:rgba(145,171,207,.09)}.fact-label{color:#74849a}.timeline:before{background:rgba(146,171,205,.15)}
+    .event:before{background:#7183ff;box-shadow:0 0 0 4px rgba(109,124,255,.11),0 0 14px rgba(109,124,255,.4)}.event-title{color:#dce5f1}.event-copy{color:#8190a5}.event-date{color:#5e6d82}
+    .list-item{border-bottom-color:rgba(145,171,207,.09)}.list-item:hover{background:rgba(100,121,255,.05)}.list-item.selected{background:rgba(100,121,255,.08);box-shadow:inset 3px 0 #7182ff}
+    .detail-section{border-bottom-color:rgba(145,171,207,.1)}.detail-title{color:#e0e8f3}.definition dt{color:#77879c}.definition dd{color:#bdc9d9}
+    .tag{border-color:rgba(145,171,207,.14);background:rgba(126,148,183,.055);color:#8898ad}.tag.blue{border-color:rgba(109,124,255,.22);background:rgba(109,124,255,.1);color:#9aa7ff}.tag.purple{border-color:rgba(169,135,255,.2);background:rgba(169,135,255,.09);color:#c1a9ff}
+    .toggle{background:#263448}.toggle.on{background:linear-gradient(90deg,#1bbd94,#3ee0b8)}
+    .health-card{border-color:rgba(142,168,204,.13);background:linear-gradient(145deg,#111c2a,#0c1622);box-shadow:0 18px 45px rgba(0,0,0,.17)}.health-name{color:#dce4ef}.health-value{color:#f2f6fc}.health-meta{color:#728197}
+    .flow-step{border-color:rgba(128,153,255,.17);background:linear-gradient(145deg,rgba(91,111,255,.1),rgba(47,204,224,.035));color:#afbdd0}.flow-arrow{color:#53647a}
+    .threshold{background:rgba(45,226,178,.055);color:#9fe6d3}.threshold.medium{background:rgba(255,189,99,.055);color:#edc58c}.threshold.high{background:rgba(255,107,121,.055);color:#ef9ba4}
+    .route-card{border-color:rgba(145,171,207,.12);background:rgba(14,24,38,.82)}.route-title{color:#d9e2ef}.route-copy{color:#78879c}
+    .chart{border-bottom-color:rgba(145,171,207,.11)}.bar{background:linear-gradient(180deg,#7788ff,#5364e8);box-shadow:0 0 12px rgba(90,111,241,.22)}.bar.alt{background:linear-gradient(180deg,#44d5e6,#208da8)}.bar-label{color:#637287}
+    .matrix th,.matrix td{border-color:rgba(145,171,207,.11)}.deny{color:#485568}
+    .template-preview{border-color:rgba(151,177,213,.18);background:#f8fafc;color:#182233;box-shadow:0 28px 70px rgba(0,0,0,.28)}.template-preview h2{color:#162033}.template-preview .fake-line{background:#dfe4ea}
+    .drawer{border-left-color:rgba(147,173,208,.16);background:#0d1623;box-shadow:-34px 0 90px rgba(0,0,0,.42)}.drawer-head,.drawer-foot{border-color:rgba(145,171,207,.11);background:#101a28}.drawer-title{color:#edf3fb}.drawer-body{color:#b8c4d4}
+    .overlay{background:rgba(1,5,10,.58);backdrop-filter:blur(5px)}.toast{border:1px solid rgba(127,151,255,.2);background:#121d2c;color:#e7edf7;box-shadow:0 20px 55px rgba(0,0,0,.42),0 0 30px rgba(80,104,235,.1)}
+    @media(max-width:1100px){.metrics{grid-template-columns:repeat(2,1fr)}.grid-3,.health-grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}.topbar{grid-template-columns:auto minmax(180px,1fr) auto}.system-live{display:none}}
+    @media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:40;inset:0 auto 0 0;width:276px;transform:translateX(-102%);transition:.24s}.sidebar.open{transform:translateX(0)}.mobile-menu{display:inline-grid}.topbar{grid-template-columns:auto 1fr auto;padding:0 12px}.breadcrumb{display:none}.top-actions .icon-btn:first-child{display:none}.page-host:before,.page-host:after{left:0}.page{padding:25px 14px 52px}.metrics,.grid-2,.grid-3,.health-grid{grid-template-columns:1fr}.page-head{align-items:flex-start;flex-direction:column}.head-actions{width:100%;overflow:auto}.company-hero{grid-template-columns:1fr}.fact-list{grid-template-columns:1fr}.composer-dock{left:0}.agent-chat{width:calc(100% - 24px)}.thresholds{grid-template-columns:repeat(2,1fr)}.result-head{padding:16px}.finding{grid-template-columns:7px minmax(0,1fr)}.citation,.evidence-inline{grid-column:2}.result-foot{align-items:flex-start;flex-direction:column}.button-group{width:100%}.button-group .btn{flex:1}}
+  </style>
+  <style id="atlas-editorial-theme">
+    /* Atlas Editorial Intelligence — light command-center theme */
+    :root{
+      --bg:#f2efe8;
+      --surface:#fffdf8;
+      --surface2:#f7f3eb;
+      --ink:#152039;
+      --text:#344157;
+      --muted:#697386;
+      --faint:#9a9e9f;
+      --line:#d9d3c7;
+      --line2:#bcb5a8;
+      --blue:#3157d7;
+      --blue2:#233f9f;
+      --blueSoft:#e9edff;
+      --green:#16755a;
+      --greenSoft:#e5f4ed;
+      --red:#c44738;
+      --redSoft:#fbe9e5;
+      --amber:#b8751b;
+      --amberSoft:#fff0d3;
+      --purple:#6b50aa;
+      --purpleSoft:#eee8fa;
+      --nav:#ece7dc;
+      --nav2:#e2dccf;
+      --shadow:0 16px 36px rgba(53,47,36,.08);
+      --radius:10px
+    }
+    *{scrollbar-color:#bdb6a9 transparent}
+    body{
+      color:var(--text);
+      background:
+        linear-gradient(rgba(72,82,104,.035) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(72,82,104,.035) 1px,transparent 1px),
+        var(--bg);
+      background-size:32px 32px;
+      font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+      font-size:14px
+    }
+    .app{grid-template-columns:280px minmax(0,1fr);background:transparent}
+    .sidebar{
+      position:relative;
+      color:var(--ink);
+      background:rgba(239,235,226,.97);
+      border-right:1px solid var(--line2);
+      box-shadow:8px 0 28px rgba(71,64,51,.06)
+    }
+    .sidebar:before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto;
+      height:7px;
+      background:linear-gradient(90deg,#2548bd 0 52%,#e0a236 52% 73%,#c84d3d 73% 100%)
+    }
+    .sidebar:after{display:none}
+    .brand{
+      position:relative;
+      min-height:78px;
+      gap:13px;
+      padding:8px 22px 0;
+      color:var(--ink);
+      border-bottom:1px solid var(--line);
+      font-size:16px;
+      font-weight:820;
+      letter-spacing:-.025em
+    }
+    .brand:after{
+      content:"ENTERPRISE INTELLIGENCE";
+      position:absolute;
+      left:66px;
+      top:48px;
+      color:#817b70;
+      font:700 8px/1.2 Inter,system-ui,sans-serif;
+      letter-spacing:.16em
+    }
+    .brand-mark{
+      width:31px;
+      height:31px;
+      color:#fff;
+      border:0;
+      border-radius:3px;
+      background:var(--ink);
+      box-shadow:5px 5px 0 #d8a13a;
+      font-family:Georgia,serif;
+      font-size:15px
+    }
+    .nav-scroll{padding:20px 14px 28px}
+    .nav-group{
+      margin-bottom:15px;
+      padding-bottom:15px;
+      border-bottom:1px solid rgba(112,105,92,.14)
+    }
+    .nav-label{
+      padding:0 11px 9px;
+      color:#8b857a;
+      font-size:9px;
+      font-weight:850;
+      letter-spacing:.18em
+    }
+    .nav-item{
+      position:relative;
+      min-height:44px;
+      gap:12px;
+      margin:3px 0;
+      padding:9px 11px;
+      color:#5c6370;
+      border:1px solid transparent;
+      border-radius:7px;
+      font-size:13px;
+      font-weight:650
+    }
+    .nav-item:before{display:none}
+    .nav-item:hover{
+      color:var(--ink);
+      background:rgba(255,253,248,.7);
+      border-color:var(--line)
+    }
+    .nav-item.active{
+      color:#fff;
+      background:var(--ink);
+      border-color:var(--ink);
+      box-shadow:5px 5px 0 #d7a13d
+    }
+    .nav-icon{
+      width:26px;
+      height:26px;
+      color:#6d7280;
+      background:#f8f5ee;
+      border:1px solid #cfc8bb;
+      border-radius:5px;
+      font-size:10px
+    }
+    .nav-item.active .nav-icon{
+      color:var(--ink);
+      background:#f4cc77;
+      border-color:#f4cc77;
+      box-shadow:none
+    }
+    .nav-badge{
+      color:#676257;
+      background:#ded8cb;
+      font-size:10px
+    }
+    .nav-item.active .nav-badge{color:#fff;background:rgba(255,255,255,.15)}
+    .sidebar-foot{
+      padding:16px;
+      background:rgba(228,222,210,.62);
+      border-top:1px solid var(--line)
+    }
+    .profile{border:1px solid transparent}
+    .profile:hover{background:#f8f5ee;border-color:var(--line)}
+    .profile-avatar{color:#fff;background:var(--blue)}
+    .profile-name{color:var(--ink);font-weight:760}
+    .profile-role{color:#827d73}
+
+    .main{background:transparent}
+    .topbar{
+      min-height:77px;
+      padding:0 27px;
+      background:rgba(255,253,248,.91);
+      border-bottom:1px solid var(--line2);
+      box-shadow:0 6px 20px rgba(62,56,45,.045);
+      backdrop-filter:blur(16px)
+    }
+    .breadcrumb{color:#6b7180;font-size:12px;font-weight:700;letter-spacing:.015em}
+    .global-search{
+      min-height:42px;
+      background:#f6f2e9;
+      border:1px solid #cec7ba;
+      border-radius:6px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.8)
+    }
+    .global-search:focus-within{
+      border-color:#6c7ec8;
+      box-shadow:0 0 0 3px rgba(49,87,215,.11)
+    }
+    .global-search input{color:var(--ink);font-size:13px}
+    .global-search input::placeholder{color:#8f908d}
+    .search-key{
+      color:#787b83;
+      background:#e7e1d5;
+      border-color:#d2cabc
+    }
+    .system-live{color:var(--green);background:var(--greenSoft);border-color:#bfded0}
+    .icon-btn{
+      color:#626b7b;
+      background:#f8f5ee;
+      border-color:#d2cbbf;
+      border-radius:6px
+    }
+    .icon-btn:hover{color:var(--ink);background:#fffdf8;border-color:#aaa294}
+
+    .page-host{
+      background:
+        radial-gradient(circle at 82% 12%,rgba(49,87,215,.07),transparent 25%),
+        radial-gradient(circle at 14% 80%,rgba(216,157,48,.07),transparent 26%)
+    }
+    .page-host:before,.page-host:after{display:none}
+    .page{max-width:1420px;padding:38px 36px 64px}
+    .page.narrow{max-width:1320px}
+    .page-head{
+      margin-bottom:25px;
+      padding-bottom:21px;
+      border-bottom:1px solid var(--line2)
+    }
+    .page-title{
+      color:var(--ink);
+      font-family:Georgia,"Songti SC","STSong",serif;
+      font-size:31px;
+      font-weight:700;
+      letter-spacing:-.025em
+    }
+    .page-title:before{
+      content:"";
+      display:inline-block;
+      width:10px;
+      height:10px;
+      margin:0 12px 3px 0;
+      background:#d7a13d;
+      box-shadow:4px 4px 0 var(--blue)
+    }
+    .page-desc{max-width:720px;color:#697386;font-size:13px;line-height:1.75}
+
+    .panel,.metric,.route-card,.health-card{
+      color:var(--text);
+      background:rgba(255,253,248,.95);
+      border:1px solid var(--line);
+      border-radius:8px;
+      box-shadow:0 12px 28px rgba(62,55,42,.06)
+    }
+    .panel:before,.metric:before,.route-card:before,.health-card:before{display:none}
+    .panel-head{
+      min-height:64px;
+      background:rgba(246,242,233,.64);
+      border-bottom:1px solid var(--line)
+    }
+    .panel-title,.metric-value,.health-value,.route-title{color:var(--ink)}
+    .panel-title{font-size:14px;font-weight:800}
+    .panel-subtitle,.metric-note,.health-meta,.route-copy{color:var(--muted)}
+    .panel-body{color:var(--text)}
+    .metric{
+      position:relative;
+      min-height:142px;
+      padding:20px;
+      overflow:hidden
+    }
+    .metric:after{
+      content:"";
+      position:absolute;
+      left:20px;
+      right:20px;
+      bottom:0;
+      height:4px;
+      background:var(--blue)
+    }
+    .metric:nth-child(2):after{background:#d7a13d}
+    .metric:nth-child(3):after{background:var(--red)}
+    .metric:nth-child(4):after{background:var(--green)}
+    .metric-label{color:#6f7581;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .metric-value{font-family:Georgia,serif;font-size:33px}
+
+    .btn{
+      min-height:38px;
+      color:#334057;
+      background:#fffdf8;
+      border:1px solid #bdb5a8;
+      border-radius:5px;
+      box-shadow:2px 2px 0 rgba(102,93,77,.13);
+      font-weight:750
+    }
+    .btn:hover{color:var(--ink);background:#f8f3e9;border-color:#8f887b;transform:translateY(-1px)}
+    .btn.primary{
+      color:#fff;
+      background:var(--blue);
+      border-color:var(--blue2);
+      box-shadow:3px 3px 0 #172b70
+    }
+    .btn.primary:hover{background:#294cc4}
+    .field,.select{
+      min-height:39px;
+      color:var(--ink);
+      background:#fffdf8;
+      border:1px solid #c8c0b3;
+      border-radius:5px
+    }
+    .field:focus,.select:focus{border-color:#6d7fc5;box-shadow:0 0 0 3px rgba(49,87,215,.1)}
+
+    .status{border:1px solid transparent;font-weight:750}
+    .status.green{color:#176c54;background:#e3f2eb;border-color:#c2ded2}
+    .status.red{color:#ad3e32;background:#fae8e4;border-color:#efc8c0}
+    .status.amber{color:#996116;background:#fff0d5;border-color:#efd5a5}
+    .status.blue{color:#2d50bd;background:#e8edff;border-color:#ccd5ff}
+    .status.purple{color:#6548a1;background:#eee8f8;border-color:#d9cdef}
+
+    .agent-page{
+      color:var(--text);
+      background:
+        linear-gradient(90deg,transparent 0 71px,rgba(198,70,56,.14) 71px 72px,transparent 72px),
+        repeating-linear-gradient(0deg,rgba(88,96,112,.045) 0 1px,transparent 1px 31px),
+        #f8f4ec
+    }
+    .agent-chat{width:min(1060px,calc(100% - 48px));padding:33px 0 190px}
+    .date{
+      width:max-content;
+      margin:0 auto 30px;
+      color:#736d62;
+      background:#eee8dc;
+      border:1px solid #d8d0c2;
+      border-radius:4px;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.09em
+    }
+    .turn{gap:15px;margin:25px 0}
+    .user-bubble{
+      color:#fff;
+      background:var(--ink);
+      border:1px solid #101a2d;
+      border-radius:14px 14px 3px 14px;
+      box-shadow:6px 6px 0 #d7a13d;
+      font-size:14px;
+      line-height:1.75
+    }
+    .agent-avatar{
+      width:34px;
+      height:34px;
+      color:var(--ink);
+      background:#f4c96d;
+      border:1px solid #bd8526;
+      border-radius:4px;
+      box-shadow:3px 3px 0 var(--ink);
+      font-family:Georgia,serif;
+      font-weight:800
+    }
+    .agent-name{color:#344057;font-size:11px;font-weight:850;letter-spacing:.035em}
+    .prose{color:#3f4b5d;font-size:14px;line-height:1.8}
+    .activity{
+      background:#f7f2e9;
+      border:1px solid #d4ccbe;
+      border-radius:6px
+    }
+    .activity summary{color:#4d5768;font-weight:720}
+    .activity-body{color:#667084;background:#fffdf8;border-top:1px solid var(--line)}
+    .result{
+      background:#fffdf8;
+      border:1px solid #aaa294;
+      border-radius:7px;
+      box-shadow:8px 8px 0 rgba(21,32,57,.11)
+    }
+    .result-head{
+      color:#fff;
+      background:var(--ink);
+      border-bottom:0
+    }
+    .result-kicker{color:#f0c873;font-size:10px;font-weight:850;letter-spacing:.14em}
+    .result-head h3{color:#fff;font-family:Georgia,"Songti SC",serif;font-size:23px}
+    .result-meta{color:#aeb8c8}
+    .score{color:#d5dbe6;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+    .score strong{color:#f4cc77;font-family:Georgia,serif}
+    .result-summary{color:#354157;background:#f5f0e6;border-color:#ddd4c5}
+    .finding{border-color:#e0d9cd}
+    .finding-title{color:var(--ink)}
+    .finding-copy{color:#647083}
+    .citation{color:#3157c6;background:#edf0ff;border-color:#ccd5ff}
+    .evidence-inline{color:#5c6676;background:#f6f2ea;border-color:#ddd6ca}
+    .result-foot{background:#f6f2e9;border-color:#ddd6ca}
+    .result-foot small{color:#6f746f}
+    .composer-dock{
+      left:280px;
+      background:linear-gradient(180deg,transparent,#f2efe8 24%,#f2efe8);
+      border:0
+    }
+    .composer-shell{width:min(1060px,calc(100% - 48px))}
+    .chip{
+      color:#5d6571;
+      background:#f8f4eb;
+      border:1px solid #d2cabd;
+      border-radius:5px;
+      font-weight:680
+    }
+    .chip:hover{color:#fff;background:var(--ink);border-color:var(--ink)}
+    .composer{
+      background:#fffdf8;
+      border:1px solid #9e9689;
+      border-radius:9px;
+      box-shadow:7px 7px 0 rgba(21,32,57,.12)
+    }
+    .composer:focus-within{border-color:var(--blue);box-shadow:7px 7px 0 rgba(49,87,215,.18)}
+    .composer textarea{color:var(--ink);font-size:14px;line-height:1.6}
+    .composer textarea::placeholder{color:#92918c}
+    .send{
+      color:#fff;
+      background:var(--blue);
+      border:1px solid var(--blue2);
+      border-radius:5px;
+      box-shadow:2px 2px 0 #172b70
+    }
+    .composer-note{color:#817b70}
+
+    .company-hero{
+      color:var(--text);
+      background:
+        linear-gradient(115deg,rgba(49,87,215,.08),transparent 45%),
+        #fffdf8;
+      border:1px solid #aaa294;
+      border-radius:8px;
+      box-shadow:7px 7px 0 rgba(21,32,57,.1)
+    }
+    .company-name{color:var(--ink);font-family:Georgia,"Songti SC",serif}
+    .company-meta{color:#667083}
+    .risk-ring{background:conic-gradient(var(--red) 0 88%,#e5ded2 88%);box-shadow:none}
+    .risk-ring:after{background:#fffdf8}
+    .risk-ring span{color:var(--red)}
+    .tabs{border-color:var(--line2)}
+    .tab{color:#737b88}
+    .tab.active{color:var(--blue);background:#e9edff;border-color:var(--blue)}
+    .fact{border-color:#e3ddd2}
+    .fact-label{color:#747b86}
+    .timeline:before{background:#d8d1c4}
+    .event:before{background:var(--blue);box-shadow:0 0 0 4px #e6eaff}
+    .event-title{color:var(--ink)}
+    .event-copy,.event-date{color:#707989}
+    .list-item{border-color:#e2dbd0}
+    .list-item:hover{background:#f6f1e8}
+    .list-item.selected{background:#e9edff;box-shadow:inset 4px 0 var(--blue)}
+    .detail-section{border-color:#e1dacd}
+    .detail-title{color:var(--ink)}
+    .definition dt{color:#767e8c}
+    .definition dd{color:#354157}
+    .tag{color:#626b78;background:#f4f0e7;border-color:#d7cfc2}
+    .tag.blue{color:#3152ba;background:#e8edff;border-color:#ccd6ff}
+    .tag.purple{color:#6448a0;background:#eee8f8;border-color:#d9cdef}
+    .toggle{background:#c7c1b6}
+    .toggle.on{background:var(--green)}
+    .health-card{background:#fffdf8;border-color:var(--line)}
+    .health-name{color:#4d586b}
+    .health-value{color:var(--ink)}
+    .health-meta{color:#737c8b}
+    .flow-step{color:#36425a;background:#edf0ff;border-color:#ccd5f7}
+    .flow-arrow{color:#8c887f}
+    .threshold{color:#176c54;background:#e5f3ed}
+    .threshold.medium{color:#986015;background:#fff0d4}
+    .threshold.high{color:#ac3d32;background:#fae8e4}
+    .route-card{background:#fffdf8;border-color:var(--line)}
+    .route-title{color:var(--ink)}
+    .route-copy{color:#6f7887}
+    .chart{border-color:#dcd5c9}
+    .bar{background:var(--blue);box-shadow:none}
+    .bar.alt{background:#d6a13e}
+    .bar-label{color:#7c7d7b}
+    .table th{
+      color:#6c706f;
+      background:#f0ebe1;
+      border-color:#d8d0c3;
+      font-size:10px;
+      letter-spacing:.06em
+    }
+    .table td{color:#465267;border-color:#e3ddd1}
+    .table tbody tr:hover td{background:#f8f3ea}
+    .table b{color:var(--ink)}
+    .matrix th,.matrix td{border-color:#ddd5c9}
+    .matrix th{background:#f1ece2;color:#656b76}
+    .deny{color:#aaa59c}
+    .template-preview{color:#182238;background:#fff;border-color:#b8b0a3;box-shadow:7px 7px 0 rgba(21,32,57,.12)}
+    .template-preview h2{color:#182238}
+    .template-preview .fake-line{background:#d9dde3}
+    .drawer{
+      color:var(--text);
+      background:#fffdf8;
+      border-left:1px solid #aaa294;
+      box-shadow:-24px 0 55px rgba(44,39,30,.16)
+    }
+    .drawer-head,.drawer-foot{background:#f1ece2;border-color:#d8d0c4}
+    .drawer-title{color:var(--ink);font-family:Georgia,"Songti SC",serif}
+    .drawer-body{color:var(--text)}
+    .overlay{background:rgba(27,31,39,.34);backdrop-filter:blur(3px)}
+    .toast{color:#fff;background:var(--ink);border:1px solid #0c1526;box-shadow:6px 6px 0 #d7a13d}
+    .progress{background:#e2dcd1}.progress span{background:var(--blue)}
+    .progress.green span{background:var(--green)}.progress.amber span{background:#d7a13d}
+
+    @media(max-width:1100px){
+      .app{grid-template-columns:238px minmax(0,1fr)}
+      .composer-dock{left:238px}
+      .brand{padding-left:17px}
+      .nav-scroll{padding-left:10px;padding-right:10px}
+    }
+    @media(max-width:820px){
+      .app{grid-template-columns:1fr}
+      .sidebar{width:280px}
+      .composer-dock{left:0}
+      .page{padding:25px 15px 55px}
+      .agent-page{background:#f8f4ec}
+      .agent-chat,.composer-shell{width:calc(100% - 24px)}
+      .page-title{font-size:25px}
+      .topbar{min-height:66px;padding:0 12px}
+    }
+  </style>
+  <style id="atlas-arctic-theme">
+    /* Arctic Operations — crisp, spacious, high-trust enterprise workspace */
+    :root{
+      --bg:#edf3f8;--surface:#ffffff;--surface2:#f4f8fb;--ink:#102b43;--text:#30475c;
+      --muted:#6f8497;--faint:#9eafbd;--line:#d6e2eb;--line2:#c2d2df;
+      --blue:#087cba;--blue2:#056391;--blueSoft:#e2f4fc;--green:#138264;--greenSoft:#e3f5ef;
+      --red:#d14f55;--redSoft:#feecef;--amber:#bc7a18;--amberSoft:#fff2d9;
+      --purple:#7756bc;--purpleSoft:#f0eafd;--nav:#0b2c46;--nav2:#103b5a;
+      --shadow:0 18px 45px rgba(32,79,109,.09);--radius:16px
+    }
+    body{color:var(--text);background:linear-gradient(135deg,#edf4f8,#f7fafc 50%,#e9f1f6);font-size:14px}
+    .app{grid-template-columns:252px minmax(0,1fr)}
+    .sidebar{color:#dbeaf4;background:linear-gradient(180deg,#082a43,#0d3855 58%,#08283e);border-right:1px solid rgba(255,255,255,.09);box-shadow:14px 0 42px rgba(17,58,85,.13)}
+    .sidebar:before{content:"";position:absolute;inset:0 0 auto;height:180px;background:radial-gradient(circle at 50% 0,rgba(62,197,237,.24),transparent 65%)}
+    .sidebar:after{display:none}.brand{min-height:76px;padding:0 21px;color:#fff;border-color:rgba(255,255,255,.1);font-size:16px}
+    .brand:after{content:"OPERATIONS CLOUD";position:absolute;left:64px;top:47px;color:#6e9ab3;font-size:8px;letter-spacing:.16em}
+    .brand-mark{width:31px;height:31px;color:#07304b;background:linear-gradient(145deg,#7de3f2,#34b3df);border:0;border-radius:11px;box-shadow:0 8px 22px rgba(32,191,230,.27)}
+    .nav-scroll{padding:19px 11px}.nav-group{border-color:rgba(255,255,255,.075)}
+    .nav-label{color:#608aa4;font-size:9px;letter-spacing:.16em}.nav-item{min-height:43px;color:#94b1c4;border:1px solid transparent;border-radius:11px;font-size:13px}
+    .nav-item:hover{color:#fff;background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.07)}
+    .nav-item.active{color:#fff;background:linear-gradient(90deg,rgba(38,172,214,.24),rgba(42,154,207,.1));border-color:rgba(103,213,241,.18);box-shadow:inset 3px 0 #57d2eb}
+    .nav-item:before{display:none}.nav-icon{color:#6d98b1;background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.1);border-radius:9px}
+    .nav-item.active .nav-icon{color:#07304b;background:#65d2e9;border-color:#65d2e9;box-shadow:0 6px 16px rgba(52,189,224,.24)}
+    .nav-badge{color:#8cb0c4;background:rgba(255,255,255,.07)}.sidebar-foot{background:rgba(2,24,39,.18);border-color:rgba(255,255,255,.09)}
+    .profile-avatar{color:#07304b;background:#72d6e9}.profile-name{color:#e8f4fa}.profile-role{color:#7297ad}
+    .topbar{min-height:72px;padding:0 25px;background:rgba(255,255,255,.88);border-color:#d4e1e9;box-shadow:0 8px 28px rgba(32,79,109,.05);backdrop-filter:blur(18px)}
+    .breadcrumb{color:#657d90;font-size:12px;font-weight:700}.global-search{min-height:40px;background:#f4f8fb;border:1px solid #cfdee8;border-radius:12px}
+    .global-search:focus-within{border-color:#5ebbdc;box-shadow:0 0 0 4px rgba(39,167,207,.1)}.global-search input{color:#15334b;font-size:13px}
+    .search-key{color:#6c8496;background:#e6eef4;border-color:#d2dfe7}.icon-btn{color:#567286;background:#f6f9fb;border-color:#d4e0e8;border-radius:11px}
+    .system-live{color:#13775e;background:#e4f5ef;border-color:#bfe2d6}.page-host{background:radial-gradient(circle at 88% 10%,rgba(51,178,216,.1),transparent 24%)}
+    .page-host:before,.page-host:after{display:none}.page{max-width:1400px;padding:34px 34px 60px}.page.narrow{max-width:1320px}
+    .page-head{padding-bottom:20px;border-bottom:1px solid #d1dee7}.page-title{color:#102b43;font-family:Inter,"PingFang SC",sans-serif;font-size:29px;font-weight:790}
+    .page-title:before{content:"";display:inline-block;width:5px;height:25px;margin:0 12px -3px 0;border-radius:99px;background:linear-gradient(#2fc0dc,#087cba)}
+    .page-desc{color:#6b8092;font-size:13px}.panel,.metric,.route-card,.health-card{background:rgba(255,255,255,.95);border:1px solid #d7e3eb;border-radius:17px;box-shadow:0 14px 38px rgba(29,78,108,.07)}
+    .panel-head{background:#f7fafc;border-color:#dce6ed}.panel-title,.metric-value,.health-value,.route-title{color:#153149}
+    .metric{min-height:138px}.metric-label{color:#728899;font-size:11px;font-weight:780}.metric-value{font-size:31px}.metric:after{display:none}
+    .btn{color:#355069;background:#fff;border-color:#cbd9e3;border-radius:10px;box-shadow:none}.btn:hover{background:#f0f7fa;border-color:#8db5ca}
+    .btn.primary{color:#fff;background:linear-gradient(135deg,#129dc6,#087cba);border-color:#0873a9;box-shadow:0 8px 18px rgba(8,124,186,.2)}
+    .field,.select{color:#17344c;background:#fff;border-color:#cddbe4;border-radius:10px}.status{border-radius:99px}
+    .agent-page{background:radial-gradient(circle at 25% 0,rgba(70,190,222,.12),transparent 30%),linear-gradient(#f4f8fb,#edf3f8)}
+    .agent-chat{width:min(1050px,calc(100% - 44px));padding-top:30px}.date{color:#668093;background:#e5eef4;border:1px solid #d2e0e8;border-radius:99px}
+    .user-bubble{color:#fff;background:linear-gradient(135deg,#0f7fb2,#095f91);border:0;border-radius:18px 18px 4px 18px;box-shadow:0 12px 30px rgba(8,96,145,.18)}
+    .agent-avatar{color:#075071;background:#b5eef5;border:1px solid #66cfdf;border-radius:12px;box-shadow:0 8px 18px rgba(28,159,192,.15)}
+    .agent-name{color:#557286}.prose{color:#40576a}.activity{background:#f6fafc;border-color:#d5e2ea;border-radius:12px}.activity-body{background:#fff;border-color:#dae5ec}
+    .result{background:#fff;border:1px solid #c9dbe5;border-radius:17px;box-shadow:0 22px 55px rgba(26,75,103,.1)}
+    .result-head{color:#fff;background:linear-gradient(125deg,#0d314b,#0b597c);border:0}.result-kicker{color:#77dced}.result-head h3{color:#fff}.result-meta{color:#a9cadb}
+    .score{color:#d7eaf1;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)}.score strong{color:#8be9f2}
+    .result-summary{background:#eff8fb;border-color:#d7e8ef}.finding{border-color:#e0e9ee}.finding-title{color:#18364e}.finding-copy{color:#63798b}
+    .citation{color:#0975aa;background:#e5f5fb;border-color:#c6e7f2}.evidence-inline{color:#566f82;background:#f5f9fb;border-color:#dce7ed}.result-foot{background:#f7fafc;border-color:#dce6ed}
+    .composer-dock{left:252px;background:linear-gradient(180deg,transparent,#edf3f8 28%,#edf3f8);border:0}.composer-shell{width:min(1050px,calc(100% - 44px))}
+    .chip{color:#557085;background:#f6fafc;border-color:#d0dfe8;border-radius:99px}.chip:hover{color:#0875a9;background:#e4f5fb;border-color:#a9dce9}
+    .composer{background:#fff;border:1px solid #bdd4e1;border-radius:17px;box-shadow:0 16px 40px rgba(31,76,102,.11)}.composer:focus-within{border-color:#43b1d3;box-shadow:0 0 0 4px rgba(44,173,213,.1),0 16px 40px rgba(31,76,102,.1)}
+    .send{color:#fff;background:linear-gradient(145deg,#16a5cc,#087cba);border:0;border-radius:12px}.company-hero{background:linear-gradient(125deg,#fff,#f1f8fb);border-color:#cbdde7;border-radius:18px;box-shadow:0 18px 45px rgba(31,77,104,.08)}
+    .company-name{color:#123149}.company-meta{color:#698092}.risk-ring{background:conic-gradient(#d14f55 0 88%,#e5edf2 88%);box-shadow:none}.risk-ring:after{background:#fff}.risk-ring span{color:#c9494f}
+    .table th{color:#687f90;background:#f0f6f9;border-color:#d8e4eb}.table td{color:#40576a;border-color:#e1e9ee}.table tbody tr:hover td{background:#f3f9fb}
+    .drawer{background:#fff;border-color:#cadbe5;box-shadow:-25px 0 65px rgba(26,66,92,.16)}.drawer-head,.drawer-foot{background:#f3f8fa;border-color:#d8e4eb}.drawer-title{color:#17334a}.overlay{background:rgba(11,39,58,.35);backdrop-filter:blur(4px)}
+    .toast{color:#fff;background:#11344c;border-color:#214f6a;box-shadow:0 18px 42px rgba(6,35,54,.25)}
+    @media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{width:276px}.composer-dock{left:0}.page{padding:24px 14px 54px}.agent-chat,.composer-shell{width:calc(100% - 24px)}}
+  </style>
+  <style id="atlas-graphite-theme">
+    /* Graphite Command — industrial, high-contrast, operations-room aesthetic */
+    :root{
+      --bg:#18191b;--surface:#242629;--surface2:#202225;--ink:#f5f3ed;--text:#d2d0ca;
+      --muted:#92928f;--faint:#686966;--line:#393b3e;--line2:#4a4d50;
+      --blue:#ff782f;--blue2:#d85c1c;--blueSoft:rgba(255,120,47,.12);--green:#52c78d;--greenSoft:rgba(82,199,141,.12);
+      --red:#ff5f63;--redSoft:rgba(255,95,99,.12);--amber:#ffb545;--amberSoft:rgba(255,181,69,.12);
+      --purple:#bb86fc;--purpleSoft:rgba(187,134,252,.12);--nav:#111214;--nav2:#191a1c;
+      --shadow:0 18px 45px rgba(0,0,0,.24);--radius:2px
+    }
+    body{color:var(--text);background:#18191b;font-family:"IBM Plex Sans","Microsoft YaHei",system-ui,sans-serif;font-size:14px}
+    .app{grid-template-columns:264px minmax(0,1fr)}.sidebar{color:#d7d6d1;background:#101113;border-right:1px solid #35373a;box-shadow:none}
+    .sidebar:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:repeating-linear-gradient(90deg,#ff782f 0 44px,#ffb545 44px 55px,#2b2d30 55px 70px)}
+    .sidebar:after{display:none}.brand{min-height:74px;padding:4px 20px 0;color:#f4f1eb;border-color:#303235;font-size:16px;text-transform:uppercase;letter-spacing:.03em}
+    .brand:after{content:"OPS / 26.07";position:absolute;right:18px;top:49px;color:#777874;font:700 8px/1 monospace;letter-spacing:.12em}
+    .brand-mark{width:30px;height:30px;color:#171819;background:#ff782f;border:0;border-radius:0;box-shadow:4px 4px 0 #4b4e51;font-family:monospace;font-size:14px}
+    .nav-scroll{padding:18px 12px}.nav-group{border-color:#292b2e}.nav-label{color:#656763;font:800 9px/1.4 monospace;letter-spacing:.15em}
+    .nav-item{min-height:42px;color:#999a96;border:1px solid transparent;border-radius:0;font-size:13px}.nav-item:hover{color:#f2f0e9;background:#1d1f21;border-color:#35373a}
+    .nav-item.active{color:#171819;background:#ff782f;border-color:#ff8a4d;box-shadow:4px 4px 0 #383a3d}.nav-item:before{display:none}
+    .nav-icon{color:#858682;background:#1b1d1f;border-color:#36383b;border-radius:0;font:700 10px/1 monospace}.nav-item.active .nav-icon{color:#ff782f;background:#171819;border-color:#171819;box-shadow:none}
+    .nav-badge{color:#a7a8a4;background:#292b2e}.nav-item.active .nav-badge{color:#171819;background:rgba(0,0,0,.15)}
+    .sidebar-foot{background:#151618;border-color:#303235}.profile-avatar{color:#171819;background:#ffb545;border-radius:0}.profile-name{color:#e8e6df}.profile-role{color:#747571}
+    .topbar{min-height:68px;padding:0 24px;background:#202225;border-color:#3a3c3f;box-shadow:none}.breadcrumb{color:#a3a29e;font:700 11px/1 monospace;letter-spacing:.03em}
+    .global-search{min-height:39px;background:#181a1c;border:1px solid #44474a;border-radius:0}.global-search:focus-within{border-color:#ff782f;box-shadow:inset 4px 0 #ff782f}
+    .global-search input{color:#ece9e2;font-family:monospace}.global-search input::placeholder{color:#666865}.search-key{color:#8c8d89;background:#2b2d30;border-color:#47494c;border-radius:0}
+    .icon-btn{color:#aaa9a4;background:#282a2d;border-color:#45474a;border-radius:0}.icon-btn:hover{color:#ff9b65;border-color:#ff782f}.system-live{color:#69d59f;background:rgba(82,199,141,.08);border-color:rgba(82,199,141,.25);border-radius:0}
+    .page-host{background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),#18191b;background-size:100% 32px}.page-host:before,.page-host:after{display:none}
+    .page{max-width:1420px;padding:32px 34px 60px}.page-head{padding-bottom:18px;border-bottom:1px solid #45474a}.page-title{color:#f2efe8;font-family:"Arial Narrow","Microsoft YaHei",sans-serif;font-size:28px;font-weight:850;text-transform:uppercase}
+    .page-title:before{content:"//";margin-right:10px;color:#ff782f;font-family:monospace;font-size:19px}.page-desc{color:#8e8f8c;font-size:13px}
+    .panel,.metric,.route-card,.health-card{color:#d2d0ca;background:#242629;border:1px solid #414346;border-radius:2px;box-shadow:6px 6px 0 #101113}
+    .panel-head{background:#202225;border-color:#3c3e41}.panel-title,.metric-value,.health-value,.route-title{color:#efede6}.panel-subtitle,.metric-note,.route-copy{color:#898a87}
+    .metric{min-height:134px}.metric:after{content:"";position:absolute;left:-1px;top:-1px;width:34px;height:4px;background:#ff782f}.metric:nth-child(2):after{background:#ffb545}.metric:nth-child(3):after{background:#ff5f63}.metric:nth-child(4):after{background:#52c78d}
+    .metric-label{color:#8d8e8a;font:800 10px/1.4 monospace;letter-spacing:.08em}.metric-value{font-family:monospace;font-size:30px}
+    .btn{color:#d5d3cc;background:#2a2c2f;border-color:#4a4c50;border-radius:0;box-shadow:2px 2px 0 #111214;font-weight:750}.btn:hover{color:#fff;border-color:#777975;background:#323438}
+    .btn.primary{color:#171819;background:#ff782f;border-color:#ff955e;box-shadow:3px 3px 0 #8b3c13}.btn.primary:hover{background:#ff8a4c}
+    .field,.select{color:#e4e1da;background:#1c1e20;border-color:#484a4d;border-radius:0}.field:focus,.select:focus{border-color:#ff782f;box-shadow:0 0 0 2px rgba(255,120,47,.12)}
+    .status{border-radius:0;border:1px solid currentColor}.status.green{color:#65d29b;background:rgba(82,199,141,.08)}.status.red{color:#ff7377;background:rgba(255,95,99,.08)}
+    .status.amber{color:#ffc061;background:rgba(255,181,69,.08)}.status.blue{color:#ff9a63;background:rgba(255,120,47,.08)}
+    .agent-page{background:radial-gradient(circle at 80% 10%,rgba(255,120,47,.055),transparent 27%),#18191b}
+    .agent-chat{width:min(1060px,calc(100% - 44px));padding-top:30px}.date{color:#8a8b87;background:#222426;border:1px solid #3c3e41;border-radius:0;font-family:monospace}
+    .user-bubble{color:#171819;background:#ff782f;border:1px solid #ff955e;border-radius:0;box-shadow:5px 5px 0 #71320f;font-weight:650}
+    .agent-avatar{color:#171819;background:#ffb545;border:1px solid #ffd18b;border-radius:0;box-shadow:3px 3px 0 #5c421a;font-family:monospace}
+    .agent-name{color:#a4a49f;font-family:monospace;letter-spacing:.05em}.prose{color:#c6c4be}.activity{background:#202225;border-color:#414346;border-radius:0}.activity summary{color:#b2b1ac}.activity-body{color:#92938f;background:#181a1c;border-color:#3e4043}
+    .result{background:#242629;border:1px solid #55575a;border-radius:0;box-shadow:8px 8px 0 #0c0d0e}.result-head{color:#f1eee7;background:#151618;border-bottom:3px solid #ff782f}
+    .result-kicker{color:#ff9a65;font-family:monospace;letter-spacing:.14em}.result-head h3{color:#fff;font-size:22px}.result-meta{color:#898a87}
+    .score{color:#c2c0ba;background:#242629;border-color:#45474a;border-radius:0}.score strong{color:#ffb545;font-family:monospace}.result-summary{color:#d5d2cb;background:#2b2d30;border-color:#484a4d}
+    .finding{border-color:#3c3e41}.finding-title{color:#f0ede6}.finding-copy{color:#999a96}.citation{color:#ff9a65;background:rgba(255,120,47,.08);border-color:#8a4b29;border-radius:0}
+    .evidence-inline{color:#aaa9a4;background:#1d1f21;border-color:#3a3c3f;border-radius:0}.result-foot{background:#202225;border-color:#3c3e41}
+    .composer-dock{left:264px;background:linear-gradient(180deg,transparent,#18191b 28%,#18191b);border:0}.composer-shell{width:min(1060px,calc(100% - 44px))}
+    .chip{color:#9b9c98;background:#222426;border-color:#414346;border-radius:0;font-family:monospace}.chip:hover{color:#171819;background:#ffb545;border-color:#ffb545}
+    .composer{background:#222426;border:1px solid #55575a;border-radius:0;box-shadow:6px 6px 0 #0e0f10}.composer:focus-within{border-color:#ff782f;box-shadow:6px 6px 0 #71320f}
+    .composer textarea{color:#eeece5;font-family:monospace}.composer textarea::placeholder{color:#696a67}.send{color:#171819;background:#ff782f;border-color:#ff955e;border-radius:0;box-shadow:2px 2px 0 #8c3c13}
+    .company-hero{color:#d2d0ca;background:#242629;border-color:#4e5053;border-radius:0;box-shadow:7px 7px 0 #0d0e0f}.company-name{color:#f2efe8}.company-meta{color:#92938f}
+    .risk-ring{background:conic-gradient(#ff5f63 0 88%,#383a3d 88%);box-shadow:none}.risk-ring:after{background:#242629}.risk-ring span{color:#ff7377}
+    .tabs{border-color:#3e4043}.tab{color:#858682;border-radius:0}.tab.active{color:#171819;background:#ff782f;border-color:#ff782f}
+    .table th{color:#a1a19d;background:#1d1f21;border-color:#3b3d40;font-family:monospace}.table td{color:#c0beb8;border-color:#37393c}.table tbody tr:hover td{background:#2a2c2f}.table b{color:#ece9e2}
+    .drawer{color:#d2d0ca;background:#242629;border-color:#55575a;box-shadow:-28px 0 65px rgba(0,0,0,.42)}.drawer-head,.drawer-foot{background:#1d1f21;border-color:#3d3f42}.drawer-title{color:#efede6}.overlay{background:rgba(0,0,0,.62)}
+    .toast{color:#171819;background:#ffb545;border:1px solid #ffcc80;border-radius:0;box-shadow:5px 5px 0 #5c421a}
+    @media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{width:276px}.composer-dock{left:0}.page{padding:24px 14px 54px}.agent-chat,.composer-shell{width:calc(100% - 24px)}}
+  </style>
+  <style id="atlas-jade-theme">
+    /* Jade Civic — refined Chinese institutional style with contemporary clarity */
+    :root{
+      --bg:#f2f0e9;--surface:#fffdf7;--surface2:#f6f3ea;--ink:#173c35;--text:#354c47;
+      --muted:#6f7e78;--faint:#a2a79f;--line:#d9d5c8;--line2:#c2bcad;
+      --blue:#267565;--blue2:#195b4f;--blueSoft:#e3f0eb;--green:#267565;--greenSoft:#e2f1eb;
+      --red:#b34034;--redSoft:#f8e8e4;--amber:#a97a2d;--amberSoft:#f7eed8;
+      --purple:#6d5b89;--purpleSoft:#eeeaf3;--nav:#153d36;--nav2:#1c4b42;
+      --shadow:0 16px 40px rgba(43,69,60,.08);--radius:8px
+    }
+    body{color:var(--text);background:radial-gradient(circle at 90% 0,rgba(38,117,101,.07),transparent 28%),#f2f0e9;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:14px}
+    .app{grid-template-columns:272px minmax(0,1fr)}.sidebar{color:#e6eee9;background:linear-gradient(180deg,#143c35,#1a4a40 60%,#12362f);border-right:1px solid rgba(255,255,255,.08);box-shadow:12px 0 35px rgba(23,60,53,.12)}
+    .sidebar:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#b34034}.sidebar:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 0,rgba(218,188,117,.13),transparent 30%);pointer-events:none}
+    .brand{position:relative;z-index:1;min-height:78px;padding:0 22px;color:#fff;border-color:rgba(255,255,255,.09);font-family:"Songti SC","STSong",Georgia,serif;font-size:18px;font-weight:700}
+    .brand:after{content:"企业洞察 · 风险研判";position:absolute;left:66px;top:50px;color:#8fb0a8;font:500 9px/1 "PingFang SC",sans-serif;letter-spacing:.14em}
+    .brand-mark{width:31px;height:31px;color:#fff;background:#b34034;border:1px solid #d68072;border-radius:3px;box-shadow:3px 3px 0 rgba(0,0,0,.18);font-family:"Songti SC",serif}
+    .nav-scroll{position:relative;z-index:1;padding:20px 13px}.nav-group{border-color:rgba(255,255,255,.075)}.nav-label{color:#73968d;font-size:9px;letter-spacing:.18em}
+    .nav-item{min-height:44px;color:#a7bdb7;border:1px solid transparent;border-radius:6px;font-size:13px}.nav-item:hover{color:#fff;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.07)}
+    .nav-item.active{color:#173c35;background:#ead9ac;border-color:#f3e4bb;box-shadow:4px 4px 0 rgba(5,28,23,.25)}.nav-item:before{display:none}
+    .nav-icon{color:#83a59c;background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.1);border-radius:4px}.nav-item.active .nav-icon{color:#fff;background:#b34034;border-color:#b34034;box-shadow:none}
+    .nav-badge{color:#94aea7;background:rgba(255,255,255,.07)}.nav-item.active .nav-badge{color:#584b2f;background:rgba(96,77,34,.12)}
+    .sidebar-foot{position:relative;z-index:1;background:rgba(3,25,20,.12);border-color:rgba(255,255,255,.09)}.profile-avatar{color:#fff;background:#b34034;border-radius:3px}.profile-name{color:#f0f4f1}.profile-role{color:#83a39b}
+    .topbar{min-height:74px;padding:0 26px;background:rgba(255,253,247,.9);border-color:#d7d2c5;box-shadow:0 7px 22px rgba(53,74,66,.05);backdrop-filter:blur(16px)}
+    .breadcrumb{color:#697b75;font-size:12px;font-weight:700}.global-search{min-height:40px;background:#f7f4ec;border:1px solid #cec8b9;border-radius:6px}.global-search:focus-within{border-color:#5a9185;box-shadow:0 0 0 3px rgba(38,117,101,.1)}
+    .global-search input{color:#24473f;font-size:13px}.search-key{color:#777d78;background:#eae5d8;border-color:#d4cebf}.icon-btn{color:#526b65;background:#f8f5ed;border-color:#d2cbbb;border-radius:6px}
+    .system-live{color:#267565;background:#e4f1ec;border-color:#bdd9cf}.page-host{background:linear-gradient(90deg,transparent 0 95%,rgba(179,64,52,.025) 95%),transparent}.page-host:before,.page-host:after{display:none}
+    .page{max-width:1390px;padding:36px 35px 62px}.page.narrow{max-width:1310px}.page-head{padding-bottom:21px;border-bottom:1px solid #cfc9ba}
+    .page-title{color:#173c35;font-family:"Songti SC","STSong",Georgia,serif;font-size:31px;font-weight:700}.page-title:before{content:"";display:inline-block;width:9px;height:9px;margin:0 13px 4px 0;background:#b34034;box-shadow:4px 4px 0 #d7b969}
+    .page-desc{color:#6c7c76;font-size:13px}.panel,.metric,.route-card,.health-card{background:rgba(255,253,247,.96);border:1px solid #d8d3c6;border-radius:9px;box-shadow:0 13px 32px rgba(48,72,64,.065)}
+    .panel-head{background:#f7f3e9;border-color:#ddd7ca}.panel-title,.metric-value,.health-value,.route-title{color:#20483f}.panel-subtitle,.metric-note,.route-copy{color:#74817c}
+    .metric{min-height:140px;border-top:4px solid #267565}.metric:nth-child(2){border-top-color:#b18a3e}.metric:nth-child(3){border-top-color:#b34034}.metric:nth-child(4){border-top-color:#5d806a}
+    .metric:after{display:none}.metric-label{color:#78837e;font-size:11px;font-weight:780;letter-spacing:.08em}.metric-value{font-family:Georgia,"Songti SC",serif;font-size:32px}
+    .btn{color:#355c53;background:#fffdf7;border-color:#beb7a8;border-radius:5px;box-shadow:2px 2px 0 rgba(75,71,59,.1)}.btn:hover{color:#173c35;background:#f6f1e6;border-color:#8e8779}
+    .btn.primary{color:#fff;background:#267565;border-color:#195b4f;box-shadow:3px 3px 0 #123f36}.btn.primary:hover{background:#1e6758}
+    .field,.select{color:#24483f;background:#fffdf7;border-color:#c8c1b2;border-radius:5px}.status{border-radius:4px}.status.green{color:#1f6959;background:#e2f0ea}.status.red{color:#a93e33;background:#f7e7e3}
+    .status.amber{color:#8f6725;background:#f7eed8}.status.blue{color:#236959;background:#e2efea}
+    .agent-page{background:radial-gradient(circle at 85% 0,rgba(38,117,101,.08),transparent 27%),#f5f2ea}.agent-chat{width:min(1050px,calc(100% - 44px));padding-top:32px}
+    .date{color:#756f62;background:#ece5d5;border:1px solid #d8cfbd;border-radius:4px}.user-bubble{color:#fff;background:#173c35;border:1px solid #0f2f29;border-radius:14px 14px 3px 14px;box-shadow:5px 5px 0 #d0b36b}
+    .agent-avatar{color:#fff;background:#b34034;border:1px solid #d47d72;border-radius:3px;box-shadow:3px 3px 0 #72271f;font-family:"Songti SC",serif}.agent-name{color:#526f67;font-weight:800}.prose{color:#415851}
+    .activity{background:#f7f3e9;border-color:#d6d0c1;border-radius:7px}.activity summary{color:#536760}.activity-body{color:#697a74;background:#fffdf7;border-color:#ddd7ca}
+    .result{background:#fffdf7;border:1px solid #aaa292;border-radius:8px;box-shadow:7px 7px 0 rgba(23,60,53,.1)}.result-head{color:#fff;background:#173c35;border-bottom:3px solid #b34034}
+    .result-kicker{color:#d9bd78;letter-spacing:.14em}.result-head h3{color:#fff;font-family:"Songti SC","STSong",serif;font-size:23px}.result-meta{color:#acc2bc}
+    .score{color:#d8e4e0;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.13)}.score strong{color:#e7cd8b;font-family:Georgia,serif}
+    .result-summary{color:#3c534d;background:#f2eddf;border-color:#ddd3bf}.finding{border-color:#e2dccf}.finding-title{color:#20473e}.finding-copy{color:#687872}
+    .citation{color:#276f60;background:#e4f0eb;border-color:#c4ddd4}.evidence-inline{color:#5c7069;background:#f6f2e9;border-color:#ddd7ca}.result-foot{background:#f7f3e9;border-color:#ddd7ca}
+    .composer-dock{left:272px;background:linear-gradient(180deg,transparent,#f2f0e9 28%,#f2f0e9);border:0}.composer-shell{width:min(1050px,calc(100% - 44px))}
+    .chip{color:#5d716a;background:#f8f5ed;border-color:#d1cab9;border-radius:5px}.chip:hover{color:#fff;background:#267565;border-color:#267565}
+    .composer{background:#fffdf7;border:1px solid #a9a190;border-radius:9px;box-shadow:6px 6px 0 rgba(23,60,53,.1)}.composer:focus-within{border-color:#267565;box-shadow:6px 6px 0 rgba(38,117,101,.15)}
+    .composer textarea{color:#24483f}.composer textarea::placeholder{color:#8d918b}.send{color:#fff;background:#267565;border-color:#195b4f;border-radius:5px;box-shadow:2px 2px 0 #123f36}
+    .company-hero{background:linear-gradient(125deg,#fffdf7,#f1ede1);border-color:#bdb5a5;border-radius:9px;box-shadow:7px 7px 0 rgba(23,60,53,.09)}.company-name{color:#173c35;font-family:"Songti SC","STSong",serif}.company-meta{color:#6a7b75}
+    .risk-ring{background:conic-gradient(#b34034 0 88%,#e4ded1 88%);box-shadow:none}.risk-ring:after{background:#fffdf7}.risk-ring span{color:#b34034}
+    .tabs{border-color:#d3ccbd}.tab{color:#75817c}.tab.active{color:#fff;background:#267565;border-color:#267565}.table th{color:#6a756f;background:#f0ecdf;border-color:#d8d1c3}.table td{color:#425952;border-color:#e2dccf}.table tbody tr:hover td{background:#f7f3e9}.table b{color:#1f453d}
+    .drawer{color:#354c47;background:#fffdf7;border-color:#bdb5a5;box-shadow:-25px 0 60px rgba(36,66,56,.16)}.drawer-head,.drawer-foot{background:#f1ede2;border-color:#d8d1c3}.drawer-title{color:#173c35;font-family:"Songti SC","STSong",serif}
+    .overlay{background:rgba(12,45,38,.38);backdrop-filter:blur(3px)}.toast{color:#fff;background:#173c35;border-color:#0f2f29;box-shadow:5px 5px 0 #b34034}
+    @media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{width:276px}.composer-dock{left:0}.page{padding:24px 14px 54px}.agent-chat,.composer-shell{width:calc(100% - 24px)}}
+  </style>
+  <style id="atlas-theme-controls">
+    .theme-select{
+      width:132px;height:35px;padding:0 28px 0 10px;color:var(--text);border:1px solid var(--line2);
+      border-radius:7px;background:var(--surface2);font:700 11px/1 Inter,"Microsoft YaHei",sans-serif;
+      outline:0;cursor:pointer
+    }
+    .theme-select:hover,.theme-select:focus{border-color:var(--blue)}
+    .review-page{padding:22px;min-height:100%;background:var(--bg)}
+    .review-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+    .review-workbench{display:grid;grid-template-columns:260px minmax(430px,1fr) 340px;gap:12px;min-height:650px}
+    .review-column{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius,10px);overflow:hidden}
+    .review-column-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;border-bottom:1px solid var(--line);background:var(--surface2)}
+    .review-column-title{font-size:13px;font-weight:800;color:var(--text)}
+    .review-column-copy{font-size:11px;color:var(--muted);margin-top:3px}
+    .review-queue{padding:8px}
+    .queue-item{width:100%;text-align:left;padding:12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text);cursor:pointer;margin-bottom:5px}
+    .queue-item:hover{background:var(--surface2);border-color:var(--line)}
+    .queue-item.active{background:color-mix(in srgb,var(--blue) 10%,var(--surface));border-color:color-mix(in srgb,var(--blue) 35%,var(--line))}
+    .queue-title{font-size:12px;font-weight:800;line-height:1.45}
+    .queue-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:10px;margin-top:7px}
+    .review-main{padding:15px}
+    .review-company{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid var(--line)}
+    .review-company h2{font-size:17px;margin:0 0 5px}
+    .review-id{font-size:11px;color:var(--muted)}
+    .review-tabs{display:flex;gap:4px;padding:12px 0;border-bottom:1px solid var(--line)}
+    .review-tab{padding:7px 10px;border:0;border-radius:6px;background:transparent;color:var(--muted);font-size:11px;font-weight:750;cursor:pointer}
+    .review-tab.active{background:var(--surface2);color:var(--text)}
+    .review-pane{display:none;padding-top:14px}
+    .review-pane.active{display:block}
+    .finding-review{padding:13px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px}
+    .finding-review-top{display:flex;align-items:center;gap:8px}
+    .finding-review h3{font-size:13px;margin:0}
+    .finding-review p{font-size:12px;line-height:1.65;color:var(--muted);margin:8px 0 10px}
+    .review-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .review-field{display:flex;flex-direction:column;gap:5px;font-size:10px;color:var(--muted)}
+    .review-field .field,.review-field .select{width:100%;min-width:0}
+    .score-adjust{display:grid;grid-template-columns:1fr 42px 1fr;align-items:center;gap:12px;margin-bottom:14px}
+    .score-box{padding:16px;border:1px solid var(--line);border-radius:9px;background:var(--surface2);text-align:center}
+    .score-box span{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}
+    .score-box strong{font-size:26px}
+    .score-arrow{text-align:center;color:var(--muted);font-size:20px}
+    .report-diff{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+    .diff-head,.diff-row{display:grid;grid-template-columns:1fr 1fr}
+    .diff-head{background:var(--surface2);font-size:11px;font-weight:800}
+    .diff-head div,.diff-row>div{padding:10px 12px;border-right:1px solid var(--line)}
+    .diff-head div:last-child,.diff-row>div:last-child{border-right:0}
+    .diff-row{font-size:11px;line-height:1.7;border-top:1px solid var(--line)}
+    .diff-old{color:var(--muted)}
+    .diff-old del{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red);text-decoration:none}
+    .diff-new ins{background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green);text-decoration:none}
+    .evidence-pane{padding:12px}
+    .freshness-table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:12px}
+    .freshness-table th,.freshness-table td{text-align:left;padding:8px 5px;border-bottom:1px solid var(--line)}
+    .freshness-table th{color:var(--muted);font-weight:700}
+    .evidence-card{padding:12px;border:1px solid var(--line);border-radius:8px;margin-bottom:9px}
+    .evidence-source{font-size:10px;color:var(--blue);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .evidence-card h4{font-size:12px;line-height:1.5;margin:6px 0}
+    .evidence-card p{font-size:11px;line-height:1.6;color:var(--muted);margin:0}
+    .evidence-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;font-size:9px;color:var(--muted)}
+    .review-actions{display:flex;gap:7px;justify-content:flex-end;padding:12px 15px;border-top:1px solid var(--line);background:var(--surface2)}
+    .admin-hub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .admin-card{padding:17px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;text-align:left;color:var(--text)}
+    .admin-card:hover{border-color:var(--blue);transform:translateY(-1px)}
+    .admin-card-icon{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;background:var(--surface2);font-size:11px;font-weight:850;color:var(--blue)}
+    .admin-card h3{font-size:13px;margin:12px 0 5px}
+    .admin-card p{font-size:11px;line-height:1.55;color:var(--muted);margin:0}
+    .attach-report{height:34px;padding:0 10px;border:1px solid var(--line2);border-radius:7px;background:var(--surface2);color:var(--text);font-size:11px;font-weight:750;cursor:pointer}
+    .attach-report:hover{border-color:var(--blue)}
+    .source-freshness{display:block;color:var(--muted);font-size:10px;margin-top:5px}
+    @media(max-width:1040px){.theme-select{width:102px}.system-live{display:none}}
+    @media(max-width:1280px){.review-workbench{grid-template-columns:230px minmax(390px,1fr) 300px}.admin-hub{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:1040px){.review-workbench{grid-template-columns:220px 1fr}.review-evidence-column{grid-column:1/-1}.review-summary{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:820px){.theme-select{width:88px;height:34px;padding-left:7px}.top-actions .icon-btn:first-of-type{display:none}}
+    @media(max-width:760px){.review-page{padding:14px}.review-workbench{grid-template-columns:1fr}.review-evidence-column{grid-column:auto}.admin-hub,.review-summary{grid-template-columns:1fr}.review-fields{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">A</span><span>Atlas 企业情报</span></div>
+      <div class="nav-scroll">
+        <nav class="nav-group"><div class="nav-label">业务工作台</div>
+          <button class="nav-item active" data-page="agent"><span class="nav-icon">AI</span>Agent 对话</button>
+          <button class="nav-item" data-page="tasks"><span class="nav-icon">任</span>调查任务<span class="nav-badge">12</span></button>
+          <button class="nav-item" data-page="review"><span class="nav-icon">判</span>待办研判<span class="nav-badge">7</span></button>
+          <button class="nav-item" data-page="companies"><span class="nav-icon">企</span>企业档案</button>
+          <button class="nav-item" data-page="reports"><span class="nav-icon">报</span>报告中心<span class="nav-badge">3</span></button>
+        </nav>
+        <nav class="nav-group"><div class="nav-label">系统</div>
+          <button class="nav-item" data-page="admin"><span class="nav-icon">管</span>管理后台</button>
+        </nav>
+      </div>
+      <div class="sidebar-foot"><div class="profile"><span class="profile-avatar">石</span><div><div class="profile-name">石一航</div><div class="profile-role">风险运营人员</div></div></div></div>
+    </aside>
+
+    <section class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:10px"><button class="icon-btn mobile-menu" id="menuButton">☰</button><span class="breadcrumb" id="breadcrumb">业务工作台 / Agent 对话</span></div>
+        <label class="global-search"><input id="globalSearch" placeholder="搜索企业、任务、报告或配置…"><span class="search-key">⌘ K</span></label>
+        <div class="top-actions"><span class="system-live"><i></i>INTELLIGENCE ONLINE</span><select class="theme-select" id="themeSelect" title="切换视觉风格" aria-label="切换视觉风格"><option value="arctic" selected>冰川运营</option><option value="jade">墨玉政企</option></select><button class="icon-btn" data-action="notifications">◌</button><button class="icon-btn" data-action="help">?</button></div>
+      </header>
+      <main class="page-host" id="pageHost"></main>
+    </section>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true"><div class="drawer-head"><span class="drawer-title" id="drawerTitle">详情</span><button class="icon-btn" id="closeDrawer">×</button></div><div class="drawer-body" id="drawerBody"></div><div class="drawer-foot"><button class="btn" id="cancelDrawer">取消</button><button class="btn primary" id="saveDrawer">保存配置</button></div></aside>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const state={page:'agent'};
+    const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+    const pageNames={agent:'业务工作台 / Agent 对话',tasks:'业务工作台 / 调查任务',review:'业务工作台 / 待办研判',companies:'业务工作台 / 企业档案',reports:'业务工作台 / 报告中心',admin:'系统 / 管理后台',skills:'管理后台 / Skills',tools:'管理后台 / 工具',strategies:'管理后台 / 任务策略',sources:'管理后台 / 数据源',rules:'管理后台 / 规则与评分',templates:'管理后台 / 报告模板',models:'管理后台 / 模型配置',evaluations:'管理后台 / 评测中心',monitoring:'管理后台 / 运行监控',audit:'管理后台 / 操作日志',access:'管理后台 / 用户与权限'};
+    const status=(text,tone='gray')=>`<span class="status ${tone}"><i class="dot"></i>${text}</span>`;
+    const metric=(label,value,meta,tone='')=>`<div class="metric"><div class="metric-label">${label}</div><div class="metric-value">${value}</div><div class="metric-meta ${tone}">${meta}</div></div>`;
+    const pageHead=(title,desc,actions='')=>`<header class="page-head"><div><h1 class="page-title">${title}</h1><p class="page-desc">${desc}</p></div><div class="head-actions">${actions}</div></header>`;
+    const action=(label,kind='',name='generic')=>`<button class="btn ${kind}" data-action="${name}">${label}</button>`;
+
+    function agentPage(){return `<section class="agent-page"><div class="agent-chat" id="agentChat"><div class="date">今天 · 企业调查任务</div><div class="turn user"><div class="user-bubble">调查北京童程童慧科技有限公司近一年的经营状况，重点核实失联、拖欠工资和门店关闭，并更新原风险报告。</div></div><div class="turn"><div class="agent-avatar">A</div><div><div class="agent-name">Atlas · 调查中</div><div class="prose"><p>已确认企业主体。我正在比较原报告与最新工商信息，同时查询内部风险记录、权威企业数据和公开舆情。未核验信息不会写成确定结论。</p></div><details class="activity"><summary>查看 Agent 执行过程</summary><div class="activity-body">✓ 企业主体识别：统一社会信用代码已确认<br>✓ 权威企业数据：工商与标准风险查询完成<br>✓ 内部 ES：历史标签与原报告读取完成<br>✓ 公开舆情：近 12 个月结果已去重<br>● 证据核验：2 项主体归属需要人工判断</div></details></div></div><div class="turn"><div class="agent-avatar">A</div><div><div class="agent-name">Atlas · 初步结论</div><div class="result"><div class="result-head"><div><div class="result-kicker">风险调查摘要</div><h3>发现 3 项重点经营风险</h3><div class="result-meta">北京童程童慧科技有限公司 · 截止 2026-07-15</div></div><div class="score">风险评分<strong>9.8</strong>原报告已人工调整</div></div><div class="result-summary">当前建议维持高风险。失联风险已有多来源支持；拖欠工资和门店关闭仍需完成主体及处理状态核验。</div><div class="finding"><i class="severity"></i><div><div class="finding-title">失联风险 ${status('高关注','red')}</div><div class="finding-copy">多个公开联系方式无法接通，历史数据存在失联标签，三项来源指向同一主体。</div></div><button class="citation">证据 [1–3]</button><div class="evidence-inline">[1] 国家企业信用信息公示系统 · 主体已核验<br>[2] 权威企业数据 · 联系方式变更<br>[3] 内部 ES · 历史失联标签，部分可追溯</div></div><div class="finding"><i class="severity amber"></i><div><div class="finding-title">拖欠工资 ${status('待确认','amber')}</div><div class="finding-copy">近九十天出现多起相关投诉，投诉主体与经营门店关联度较高。</div></div><button class="citation">证据 [4–5]</button><div class="evidence-inline">[4] 投诉平台 · 欠薪投诉摘要<br>[5] 内部风险监测 · 处置状态待核验</div></div><div class="finding"><i class="severity amber"></i><div><div class="finding-title">门店关闭 ${status('主体待核验','amber')}</div><div class="finding-copy">五家门店关闭或注销，其中两家与目标主体关系明确，其余可能属于关联品牌。</div></div><button class="citation">证据 [6–8]</button><div class="evidence-inline">[6] 公开新闻 · 门店关闭报道<br>[7] 门店页面 · 已核验 2 家<br>[8] 投诉平台 · 关联关系待确认</div></div><div class="result-foot"><small>证据可追溯 8 / 10 · 8 个来源</small><div class="button-group">${action('继续追问','','focusPrompt')}${action('生成风险提示报告','primary','generateReport')}</div></div></div></div></div><div class="turn"><div class="agent-avatar">A</div><div><div class="agent-name">Atlas · 需要确认</div><div class="panel"><div class="panel-body"><div style="font-size:13px;color:var(--amber);font-weight:750;margin-bottom:7px">主体归属存在不确定性</div><div class="prose"><p>两条关店信息可能属于关联企业。是否继续展开股东、品牌和分支机构关系？</p></div><div class="button-group">${action('展开调查','primary','confirmExpand')}${action('暂不展开','','skipExpand')}</div></div></div></div></div></div><div class="composer-dock"><div class="composer-shell"><div class="prompt-chips"><button class="chip" data-prompt="只看旧报告之后新增的风险。">只看新增风险</button><button class="chip" data-prompt="展开关联企业并判断风险是否传导。">展开关联企业</button><button class="chip" data-prompt="解释风险评分为什么是 9.8。">解释风险评分</button><button class="chip" data-prompt="从招商角度评估这家企业是否值得跟进。">评估招商价值</button></div><div class="composer"><textarea id="agentPrompt" placeholder="继续追问、补充要求，或输入新的企业调查任务…"></textarea><button class="send" id="sendPrompt">↑</button></div><div class="composer-note">Atlas 可能犯错；正式结论需经过人工复核</div></div></div></section>`}
+
+    function tasksPage(){return `<section class="page narrow">${pageHead('调查任务','管理所有 Agent 调查、人工确认和报告生成过程。',action('新建调查','primary','newTask'))}<div class="metrics">${metric('进行中','12','较昨日 +3','good')}${metric('等待人工确认','7','其中 2 项超过 24 小时','warn')}${metric('本月已完成','186','平均耗时 18 分钟','good')}${metric('报告生成成功率','97.8%','较上月 +1.4%','good')}</div><div class="toolbar"><input class="field" placeholder="搜索任务或企业"><select class="select"><option>全部状态</option><option>进行中</option><option>待确认</option><option>已完成</option></select><select class="select"><option>全部任务类型</option><option>风险调查</option><option>招商分析</option><option>复合任务</option></select><span class="spacer"></span>${action('导出列表','','export')}</div><div class="panel table-wrap"><table class="table"><thead><tr><th>任务</th><th>企业</th><th>Agent识别意图</th><th>状态</th><th>进度</th><th>发起人</th><th>更新时间</th></tr></thead><tbody><tr data-open="任务详情"><td>#AT-20260722-0186</td><td><b>北京童程童慧科技有限公司</b></td><td>风险报告更新</td><td>${status('等待确认','amber')}</td><td><div class="progress amber"><span style="width:78%"></span></div></td><td>王晨</td><td>5分钟前</td></tr><tr data-open="任务详情"><td>#AT-20260722-0185</td><td><b>乾道投资控股集团有限公司</b></td><td>风险调查</td><td>${status('调查中','blue')}</td><td><div class="progress"><span style="width:56%"></span></div></td><td>李宁</td><td>12分钟前</td></tr><tr><td>#AT-20260722-0182</td><td><b>华北智造科技有限公司</b></td><td>招商线索分析</td><td>${status('已完成','green')}</td><td><div class="progress green"><span style="width:100%"></span></div></td><td>赵可</td><td>1小时前</td></tr><tr><td>#AT-20260722-0179</td><td><b>中关村数据服务有限公司</b></td><td>企业概览</td><td>${status('已完成','green')}</td><td><div class="progress green"><span style="width:100%"></span></div></td><td>王晨</td><td>2小时前</td></tr><tr><td>#AT-20260721-0164</td><td><b>京南新能源产业有限公司</b></td><td>复合任务</td><td>${status('数据源异常','red')}</td><td><div class="progress amber"><span style="width:42%"></span></div></td><td>系统批次</td><td>昨天</td></tr></tbody></table></div></section>`}
+
+    function companiesPage(){return `<section class="page narrow">${pageHead('企业档案','同一企业的事实底稿、历史调查、风险事件和报告版本。',action('关注企业','primary','followCompany'))}<div class="company-hero"><div><h2 class="company-name">北京童程童慧科技有限公司</h2><div class="company-meta"><span>${status('存续','green')}</span><span>统一社会信用代码：91110108MA01Q4K25F</span><span>更新至 2026-07-15</span><span>北京市海淀区</span></div></div><div class="risk-ring"><span><strong>9.8</strong>风险评分</span></div></div><div class="tabs"><button class="tab active">企业概览</button><button class="tab">股东与人员</button><button class="tab">经营动态</button><button class="tab">风险事件</button><button class="tab">关联关系</button><button class="tab">调查历史</button></div><div class="grid-2"><div class="panel"><div class="panel-head"><div><div class="panel-title">工商基本信息</div><div class="panel-subtitle">来源：权威企业数据 · T+1</div></div>${action('查看全部','','openCompany')}</div><div class="panel-body"><div class="fact-list"><div class="fact"><span class="fact-label">法定代表人</span><b>李明</b></div><div class="fact"><span class="fact-label">注册资本</span><b>500 万元</b></div><div class="fact"><span class="fact-label">成立日期</span><b>2019-03-12</b></div><div class="fact"><span class="fact-label">经营状态</span><b>存续</b></div><div class="fact"><span class="fact-label">股东数量</span><b>3</b></div><div class="fact"><span class="fact-label">分支机构</span><b>18</b></div></div></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">近期变化</div><div class="panel-subtitle">与上次调查快照对比</div></div>${status('3 项新增','red')}</div><div class="panel-body"><div class="timeline"><div class="event"><div class="event-title">新增门店关闭线索</div><div class="event-copy">2 家已确认属于目标企业，3 家仍在核验关联关系。</div><div class="event-date">2026-07-14</div></div><div class="event"><div class="event-title">新增欠薪投诉</div><div class="event-copy">投诉主体匹配，处理状态尚未同步。</div><div class="event-date">2026-07-13</div></div><div class="event"><div class="event-title">主要人员发生变更</div><div class="event-copy">新增一名监事，不影响当前实控关系。</div><div class="event-date">2026-06-28</div></div></div></div></div><div class="panel"><div class="panel-head"><div class="panel-title">风险概览</div>${action('发起风险调查','primary','newTask')}</div><div class="panel-body"><div class="tag-row"><span class="tag">经营异常 14</span><span class="tag">司法案件 23</span><span class="tag">被执行人 6</span><span class="tag">限高消费 2</span><span class="tag">负面舆情 19</span><span class="tag">投诉举报 28</span></div></div></div><div class="panel"><div class="panel-head"><div class="panel-title">历史报告</div>${action('查看报告中心','','gotoReports')}</div><div class="panel-body"><div class="list"><div class="list-item" data-open="报告详情"><div class="list-icon">DOC</div><div><div class="list-name">企业风险监测分析报告</div><div class="list-copy">2026-07-14 · 正式版 · 王晨审核</div></div>${status('已归档','green')}</div><div class="list-item"><div class="list-icon">DOC</div><div><div class="list-name">招商线索初筛报告</div><div class="list-copy">2026-06-22 · 草稿 · 未复核</div></div>${status('草稿','gray')}</div></div></div></div></div></section>`}
+
+    function reportsPage(){return `<section class="page narrow">${pageHead('报告中心','统一管理草稿、人工复核、正式发布和历史报告版本。',action('生成报告','primary','newReport'))}<div class="metrics">${metric('待复核','3','最早等待 6 小时','warn')}${metric('本月生成','192','风险报告 164 份','good')}${metric('正式归档','176','归档率 91.7%','good')}${metric('平均生成时间','48 秒','较上月 -12 秒','good')}</div><div class="toolbar"><input class="field" placeholder="搜索报告或企业"><select class="select"><option>全部报告类型</option><option>风险提示报告</option><option>招商线索报告</option></select><select class="select"><option>全部状态</option><option>草稿</option><option>待复核</option><option>正式版</option></select></div><div class="panel table-wrap"><table class="table"><thead><tr><th>报告名称</th><th>类型</th><th>版本</th><th>证据完整度</th><th>状态</th><th>生成人</th><th>更新时间</th><th></th></tr></thead><tbody><tr><td><b>北京童程童慧科技有限公司_风险提示报告</b></td><td>风险提示</td><td>v3</td><td>8 / 10</td><td>${status('待复核','amber')}</td><td>Atlas / 王晨</td><td>10分钟前</td><td>${action('预览','','previewReport')}</td></tr><tr><td><b>乾道投资控股集团有限公司_风险调查报告</b></td><td>风险调查</td><td>v2</td><td>12 / 12</td><td>${status('正式版','green')}</td><td>Atlas / 李宁</td><td>1小时前</td><td>${action('预览','','previewReport')}</td></tr><tr><td><b>华北智造科技有限公司_招商线索报告</b></td><td>招商线索</td><td>v1</td><td>7 / 8</td><td>${status('草稿','gray')}</td><td>Atlas</td><td>2小时前</td><td>${action('编辑','','previewReport')}</td></tr><tr><td><b>京南新能源产业有限公司_招商分析报告</b></td><td>招商线索</td><td>v4</td><td>9 / 9</td><td>${status('已归档','green')}</td><td>Atlas / 赵可</td><td>昨天</td><td>${action('预览','','previewReport')}</td></tr></tbody></table></div></section>`}
+
+    function skillsPage(){return `<section class="page narrow">${pageHead('Skills','定义 Agent 可复用的业务能力、输入输出、工具依赖和完成条件。',action('新建 Skill','primary','newSkill'))}<div class="metrics">${metric('生产 Skills','9','全部通过回归评测','good')}${metric('测试中','3','等待业务验收','warn')}${metric('本周调用','4,286','成功率 98.6%','good')}${metric('平均耗时','12.4 秒','含外部查询','')}</div><div class="split"><div class="panel"><div class="panel-head"><div><div class="panel-title">Skill 列表</div><div class="panel-subtitle">点击查看配置与版本</div></div><input class="field" style="min-width:130px;width:150px" placeholder="搜索 Skill"></div><div class="list"><div class="list-item selected" data-open="负面舆情调查"><div class="list-icon">舆</div><div><div class="list-name">负面舆情调查</div><div class="list-copy">搜索、去重、主体匹配、事件提取和证据核验</div></div>${status('生产','green')}</div><div class="list-item" data-open="工商变更核验"><div class="list-icon">工</div><div><div class="list-name">工商变更核验</div><div class="list-copy">比较历史报告与最新权威工商数据</div></div>${status('生产','green')}</div><div class="list-item" data-open="标准风险查询"><div class="list-icon">险</div><div><div class="list-name">标准风险查询</div><div class="list-copy">司法、行政与经营异常结构化查询</div></div>${status('生产','green')}</div><div class="list-item" data-open="招商信号发现"><div class="list-icon">招</div><div><div class="list-name">招商信号发现</div><div class="list-copy">融资、招聘、扩张、迁址及投资动态</div></div>${status('测试','amber')}</div><div class="list-item" data-open="证据交叉核验"><div class="list-icon">证</div><div><div class="list-name">证据交叉核验</div><div class="list-copy">主体一致性、时间有效性和来源独立性</div></div>${status('生产','green')}</div></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">负面舆情调查</div><div class="panel-subtitle">版本 2.4.1 · 发布于 2026-07-18</div></div><div class="head-actions">${action('测试运行','','testSkill')}${action('编辑配置','primary','editSkill')}</div></div><div class="panel-body"><div class="detail-section"><div class="detail-title">业务定义</div><dl><div class="definition"><dt>用途</dt><dd>调查目标企业近指定时间范围内的负面舆情、投诉和经营风险信号。</dd></div><div class="definition"><dt>触发意图</dt><dd>风险调查、报告更新、舆情核验、企业尽调</dd></div><div class="definition"><dt>完成条件</dt><dd>指定来源检查完成；候选事件完成主体匹配；重大结论包含可追溯证据。</dd></div><div class="definition"><dt>失败策略</dt><dd>标记数据源不可用，不将空结果解释为无风险。</dd></div></dl></div><div class="detail-section"><div class="detail-title">输入与输出</div><div class="tag-row"><span class="tag blue">company_id</span><span class="tag blue">company_name</span><span class="tag blue">time_range</span><span class="tag blue">focus_topics[]</span></div><div style="height:8px"></div><div class="tag-row"><span class="tag purple">risk_events[]</span><span class="tag purple">evidence[]</span><span class="tag purple">confidence</span><span class="tag purple">review_items[]</span></div></div><div class="detail-section"><div class="detail-title">依赖能力</div><div class="tag-row"><span class="tag">企业主体识别</span><span class="tag">搜索引擎查询</span><span class="tag">内部舆情 ES</span><span class="tag">网页正文提取</span><span class="tag">证据核验</span></div></div><div class="detail-section"><div class="detail-title">运行限制</div><dl><div class="definition"><dt>最大步骤</dt><dd>20</dd></div><div class="definition"><dt>最长运行</dt><dd>180 秒</dd></div><div class="definition"><dt>人工节点</dt><dd>主体冲突、重大风险、证据不足</dd></div></dl></div></div></div></div></section>`}
+
+    function toolsPage(){return `<section class="page narrow">${pageHead('工具','封装确定性查询、计算和文件操作，供 Skills 安全调用。',action('注册工具','primary','newTool'))}<div class="toolbar"><input class="field" placeholder="搜索工具"><select class="select"><option>全部类型</option><option>数据查询</option><option>规则计算</option><option>文件生成</option></select><span class="spacer"></span>${status('工具网关正常','green')}</div><div class="panel table-wrap"><table class="table"><thead><tr><th>工具</th><th>类型</th><th>输入模式</th><th>权限</th><th>近24h调用</th><th>成功率</th><th>状态</th><th></th></tr></thead><tbody><tr data-open="企业主体识别工具"><td><b>company.resolve</b><div class="entity-meta">企业名称与统一信用代码锚定</div></td><td>数据查询</td><td>JSON Schema</td><td>只读</td><td>1,284</td><td>99.8%</td><td>${status('正常','green')}</td><td>${action('配置','','configure')}</td></tr><tr><td><b>risk.standard.search</b><div class="entity-meta">查询司法与标准经营风险</div></td><td>数据查询</td><td>JSON Schema</td><td>只读</td><td>836</td><td>99.2%</td><td>${status('正常','green')}</td><td>${action('配置','','configure')}</td></tr><tr><td><b>sentiment.web.search</b><div class="entity-meta">公开网页和新闻搜索</div></td><td>外部搜索</td><td>JSON Schema</td><td>受限</td><td>642</td><td>96.1%</td><td>${status('限流中','amber')}</td><td>${action('配置','','configure')}</td></tr><tr><td><b>risk.score.calculate</b><div class="entity-meta">固定规则引擎风险评分</div></td><td>规则计算</td><td>Versioned</td><td>执行</td><td>418</td><td>100%</td><td>${status('正常','green')}</td><td>${action('配置','','configure')}</td></tr><tr><td><b>report.docx.render</b><div class="entity-meta">根据已确认事实生成 Word 报告</div></td><td>文件生成</td><td>Template</td><td>写文件</td><td>186</td><td>97.8%</td><td>${status('正常','green')}</td><td>${action('配置','','configure')}</td></tr></tbody></table></div></section>`}
+
+    function strategiesPage(){return `<section class="page narrow">${pageHead('任务策略','Agent 根据用户意图自动加载策略；策略定义 Skills 组合、完成条件和人工节点。',action('新建策略','primary','newStrategy'))}<div class="grid-3"><div class="panel"><div class="panel-head"><div><div class="panel-title">风险报告更新</div><div class="panel-subtitle">意图：更新、复核、重新排查</div></div>${status('生产','green')}</div><div class="panel-body"><div class="tag-row"><span class="tag">10 个步骤</span><span class="tag">3 个人工节点</span><span class="tag">报告输出</span></div><p class="page-desc" style="margin-top:12px">比较原报告与最新事实，核验新增风险，调用固定评分规则并生成修订报告。</p></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">招商线索分析</div><div class="panel-subtitle">意图：招商、企业推荐、产业匹配</div></div>${status('测试','amber')}</div><div class="panel-body"><div class="tag-row"><span class="tag">8 个步骤</span><span class="tag">1 个人工节点</span><span class="tag">候选排序</span></div><p class="page-desc" style="margin-top:12px">结合产业条件发现机会信号，以重大风险作为排除或降级条件。</p></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">企业快速概览</div><div class="panel-subtitle">意图：了解、介绍、查一下</div></div>${status('生产','green')}</div><div class="panel-body"><div class="tag-row"><span class="tag">4 个步骤</span><span class="tag">无人工节点</span><span class="tag">摘要输出</span></div><p class="page-desc" style="margin-top:12px">确认主体并汇总核心工商、经营、风险和近期变化，不进行深度定性。</p></div></div></div><div style="height:15px"></div><div class="panel"><div class="panel-head"><div><div class="panel-title">风险报告更新 · 执行编排</div><div class="panel-subtitle">用户无需选择，Agent 在识别意图后加载</div></div><div class="head-actions">${action('回放测试','','testStrategy')}${action('编辑策略','primary','editStrategy')}</div></div><div class="panel-body"><div class="flow"><div class="flow-step">1. 主体确认</div><span class="flow-arrow">→</span><div class="flow-step">2. 原报告读取</div><span class="flow-arrow">→</span><div class="flow-step">3. 工商核对</div><span class="flow-arrow">→</span><div class="flow-step">4. 标准风险</div><span class="flow-arrow">→</span><div class="flow-step">5. 舆情投诉</div><span class="flow-arrow">→</span><div class="flow-step">6. 证据核验</div><span class="flow-arrow">→</span><div class="flow-step">7. 风险评分</div><span class="flow-arrow">→</span><div class="flow-step">8. 人工确认</div><span class="flow-arrow">→</span><div class="flow-step">9. 报告生成</div></div><div class="grid-2" style="margin-top:18px"><div class="detail-section"><div class="detail-title">必须完成</div><div class="prose"><p>指定数据源已检查；企业主体无冲突；重大风险有证据；无法确认的事项明确标记。</p></div></div><div class="detail-section"><div class="detail-title">必须暂停并请求人工</div><div class="prose"><p>主体匹配冲突、重大风险证据不足、评分需要人工调整、正式报告发布。</p></div></div></div></div></div></section>`}
+
+    function sourcesPage(){return `<section class="page narrow">${pageHead('数据源','管理连接、字段映射、数据新鲜度、权限和证据引用规则。',action('添加数据源','primary','newSource'))}<div class="health-grid"><div class="health-card"><div class="health-top"><span class="health-name">生产连接</span>${status('5 / 6 正常','green')}</div><div class="health-value">83.3%</div><div class="health-meta">内部 ES 当前网络不可访问</div></div><div class="health-card"><div class="health-top"><span class="health-name">平均数据新鲜度</span>${status('符合目标','green')}</div><div class="health-value">T+1</div><div class="health-meta">公开舆情为实时搜索</div></div><div class="health-card"><div class="health-top"><span class="health-name">今日查询</span>${status('未超限','blue')}</div><div class="health-value">18,642</div><div class="health-meta">额度使用 42%</div></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th>数据源</th><th>类型</th><th>用途</th><th>更新频率</th><th>权限</th><th>健康状态</th><th>最后检查</th><th></th></tr></thead><tbody><tr data-open="权威企业数据"><td><div class="entity"><span class="entity-icon">API</span><div><div class="entity-name">权威企业数据</div><div class="entity-meta">外部企业数据服务</div></div></div></td><td>HTTP API</td><td>工商、司法、关系</td><td>T+1</td><td>只读</td><td>${status('正常','green')}</td><td>1分钟前</td><td>${action('配置','','configureSource')}</td></tr><tr data-open="内部企业风险库"><td><div class="entity"><span class="entity-icon">ES</span><div><div class="entity-name">内部企业风险库</div><div class="entity-meta">sentiment_company_online_v1_bak</div></div></div></td><td>Elasticsearch</td><td>风险标签、评分</td><td>准实时</td><td>只读</td><td>${status('网络不可达','red')}</td><td>5天前</td><td>${action('配置','','configureSource')}</td></tr><tr><td><div class="entity"><span class="entity-icon">WEB</span><div><div class="entity-name">公开搜索引擎</div><div class="entity-meta">新闻与网页搜索</div></div></div></td><td>Search API</td><td>公开舆情</td><td>实时</td><td>受限</td><td>${status('限流正常','amber')}</td><td>刚刚</td><td>${action('配置','','configureSource')}</td></tr><tr><td><div class="entity"><span class="entity-icon">诉</span><div><div class="entity-name">互联网投诉</div><div class="entity-meta">内部投诉聚合数据</div></div></div></td><td>Elasticsearch</td><td>投诉风险</td><td>每日</td><td>只读</td><td>${status('正常','green')}</td><td>3分钟前</td><td>${action('配置','','configureSource')}</td></tr><tr><td><div class="entity"><span class="entity-icon">123</span><div><div class="entity-name">12345 热线</div><div class="entity-meta">索引与主键规则待确认</div></div></div></td><td>待配置</td><td>热线风险</td><td>未知</td><td>未授权</td><td>${status('未完成','amber')}</td><td>—</td><td>${action('配置','','configureSource')}</td></tr></tbody></table></div></section>`}
+
+    function rulesPage(){return `<section class="page narrow">${pageHead('规则与评分','管理风险标签、评分公式、组合规则、人工调整和版本生效。',action('发布新版本','primary','publishRules'))}<div class="panel" style="margin-bottom:15px"><div class="panel-body" style="display:flex;align-items:center;gap:18px"><div><div class="panel-title">当前生产版本 v3.8.2</div><div class="panel-subtitle">生效于 2026-07-01 · 由风险管理组发布</div></div><span class="spacer"></span>${status('回放通过','green')}${action('查看变更','','ruleChanges')}${action('创建草稿','','newRuleDraft')}</div></div><div class="grid-2"><div class="panel"><div class="panel-head"><div class="panel-title">风险等级阈值</div>${action('编辑','','editThreshold')}</div><div class="panel-body"><div class="thresholds"><div class="threshold"><div class="threshold-name">低风险</div><div class="threshold-value">0–3</div></div><div class="threshold medium"><div class="threshold-name">中风险</div><div class="threshold-value">3–6</div></div><div class="threshold high"><div class="threshold-name">高风险</div><div class="threshold-value">6–9</div></div><div class="threshold high"><div class="threshold-name">重大风险</div><div class="threshold-value">9–10</div></div></div></div></div><div class="panel"><div class="panel-head"><div class="panel-title">人工调整控制</div></div><div class="panel-body"><dl><div class="definition"><dt>允许角色</dt><dd>高级运营、风险审核人</dd></div><div class="definition"><dt>必填内容</dt><dd>调整前后值、理由、证据引用</dd></div><div class="definition"><dt>二次审批</dt><dd>跨越两个风险等级时必须</dd></div></dl></div></div></div><div style="height:15px"></div><div class="panel table-wrap"><div class="panel-head"><div><div class="panel-title">风险标签与分值</div><div class="panel-subtitle">现有 RiskEnum 与 RiskScoreService 的迁移视图</div></div><input class="field" style="width:160px;min-width:0" placeholder="搜索标签或编码"></div><table class="table"><thead><tr><th>编码</th><th>风险标签</th><th>分类</th><th>基础分</th><th>时间衰减</th><th>证据要求</th><th>启用</th></tr></thead><tbody><tr><td>103112107</td><td><b>失联</b></td><td>经营风险</td><td>9.0</td><td>180 天</td><td>至少 2 个独立来源</td><td><button class="toggle on"></button></td></tr><tr><td>103112113</td><td><b>拖欠工资</b></td><td>经营风险</td><td>待确认</td><td>365 天</td><td>投诉及处置记录</td><td><button class="toggle on"></button></td></tr><tr><td>103104103</td><td><b>清退</b></td><td>经营风险</td><td>8.5</td><td>365 天</td><td>主管部门或多源报道</td><td><button class="toggle on"></button></td></tr><tr><td>102101101</td><td><b>经营异常</b></td><td>工商风险</td><td>按组合规则</td><td>状态有效期</td><td>权威工商数据</td><td><button class="toggle on"></button></td></tr><tr><td>101102102</td><td><b>被执行人</b></td><td>司法风险</td><td>按金额计算</td><td>执行状态</td><td>案号、金额与状态</td><td><button class="toggle on"></button></td></tr></tbody></table></div></section>`}
+
+    function templatesPage(){return `<section class="page narrow">${pageHead('报告模板','管理风险、招商及其他业务报告的结构、字段和发布版本。',action('上传模板','primary','uploadTemplate'))}<div class="split"><div class="panel"><div class="panel-head"><div><div class="panel-title">模板列表</div><div class="panel-subtitle">4 个生产模板</div></div></div><div class="list"><div class="list-item selected"><div class="list-icon">DOC</div><div><div class="list-name">企业风险提示报告</div><div class="list-copy">v2.6 · 2026-07-10 发布</div></div>${status('生产','green')}</div><div class="list-item"><div class="list-icon">DOC</div><div><div class="list-name">企业风险监测分析报告</div><div class="list-copy">v1.9 · 兼容原系统</div></div>${status('生产','green')}</div><div class="list-item"><div class="list-icon">DOC</div><div><div class="list-name">招商线索分析报告</div><div class="list-copy">v0.8 · 等待业务验收</div></div>${status('测试','amber')}</div><div class="list-item"><div class="list-icon">XLS</div><div><div class="list-name">批量企业初筛清单</div><div class="list-copy">v1.2 · Excel 输出</div></div>${status('生产','green')}</div></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">企业风险提示报告 · 页面预览</div><div class="panel-subtitle">字段映射 32 / 36 · 4 个字段需要人工确认</div></div><div class="head-actions">${action('字段映射','','templateFields')}${action('编辑模板','primary','editTemplate')}</div></div><div class="panel-body"><div class="template-preview"><h2>企业风险提示报告</h2><div class="fake-line tiny" style="margin:22px auto"></div><div class="detail-title">一、结论摘要</div><div class="fake-line"></div><div class="fake-line"></div><div class="fake-line short"></div><div style="height:18px"></div><div class="detail-title">二、企业基本情况</div><div class="fake-line"></div><div class="fake-line"></div><div style="height:18px"></div><div class="detail-title">三、重点风险及证据</div><div class="fake-line"></div><div class="fake-line"></div><div class="fake-line short"></div><div style="height:18px"></div><div class="detail-title">四、数据来源及局限</div><div class="fake-line"></div><div class="fake-line tiny"></div></div></div></div></div></section>`}
+
+    function modelsPage(){return `<section class="page narrow">${pageHead('模型配置','配置模型路由、数据边界、降级策略与结构化输出要求。',action('添加模型','primary','addModel'))}<div class="grid-3"><div class="route-card"><div class="route-title"><span>复杂调查与规划</span>${status('主路由','blue')}</div><div class="route-copy">支持工具调用、长上下文和结构化输出。用于舆情调查、证据核验和复合任务。</div></div><div class="route-card"><div class="route-title"><span>信息抽取与分类</span>${status('低成本','green')}</div><div class="route-copy">用于批量事件抽取、标签分类和摘要，不负责最终风险判断。</div></div><div class="route-card"><div class="route-title"><span>报告生成</span>${status('高质量','purple')}</div><div class="route-copy">仅接收已确认事实和证据摘要，按模板生成报告草稿。</div></div></div><div style="height:15px"></div><div class="grid-2"><div class="panel"><div class="panel-head"><div class="panel-title">模型路由规则</div>${action('编辑','','editRouting')}</div><div class="panel-body"><dl><div class="definition"><dt>风险调查</dt><dd>复杂调查模型 → 超时后降级为固定工作流</dd></div><div class="definition"><dt>主体识别</dt><dd>规则优先 → 模型仅处理模糊名称</dd></div><div class="definition"><dt>批量抽取</dt><dd>轻量模型 → 失败记录进入人工队列</dd></div><div class="definition"><dt>报告生成</dt><dd>高质量模型 → 必须使用结构化事实输入</dd></div></dl></div></div><div class="panel"><div class="panel-head"><div class="panel-title">数据与安全边界</div>${status('策略已启用','green')}</div><div class="panel-body"><dl><div class="definition"><dt>内部敏感字段</dt><dd>默认不发送至外部模型</dd></div><div class="definition"><dt>原始投诉正文</dt><dd>脱敏后允许用于事件抽取</dd></div><div class="definition"><dt>模型训练</dt><dd>禁止使用客户数据训练</dd></div><div class="definition"><dt>日志保留</dt><dd>90 天，审计摘要长期保留</dd></div></dl></div></div></div><div style="height:15px"></div><div class="panel table-wrap"><table class="table"><thead><tr><th>路由名称</th><th>任务</th><th>模型等级</th><th>最大上下文</th><th>超时</th><th>备用路由</th><th>状态</th></tr></thead><tbody><tr><td><b>investigation-primary</b></td><td>复杂企业调查</td><td>推理型</td><td>128K</td><td>180 秒</td><td>workflow-fallback</td><td>${status('启用','green')}</td></tr><tr><td><b>extract-batch</b></td><td>批量事件抽取</td><td>轻量型</td><td>32K</td><td>30 秒</td><td>manual-queue</td><td>${status('启用','green')}</td></tr><tr><td><b>report-writer</b></td><td>报告草稿</td><td>生成型</td><td>64K</td><td>90 秒</td><td>template-only</td><td>${status('启用','green')}</td></tr></tbody></table></div></section>`}
+
+    function evaluationsPage(){return `<section class="page narrow">${pageHead('评测中心','用人工确认样本持续评估主体识别、风险发现、证据和报告质量。',action('运行完整评测','primary','runEval'))}<div class="metrics">${metric('主体匹配准确率','99.6%','目标 ≥ 99.5%','good')}${metric('重点风险召回率','91.4%','目标 ≥ 90%','good')}${metric('结论可追溯率','96.8%','正式报告目标 100%','warn')}${metric('报告重大错误','0','最近 128 个样本','good')}</div><div class="grid-2"><div class="panel"><div class="panel-head"><div><div class="panel-title">评测集</div><div class="panel-subtitle">经过业务人员确认的历史案例</div></div>${action('管理样本','','manageDataset')}</div><div class="panel-body"><dl><div class="definition"><dt>企业数量</dt><dd>128 家</dd></div><div class="definition"><dt>未人工改分</dt><dd>72 家</dd></div><div class="definition"><dt>成对报告</dt><dd>46 组修改前后版本</dd></div><div class="definition"><dt>重点风险</dt><dd>失联、欠薪、闭店、退款、群体性风险</dd></div></dl></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">最近一次回归</div><div class="panel-subtitle">2026-07-21 · 策略 v3.8.2</div></div>${status('通过','green')}</div><div class="panel-body"><div class="tag-row"><span class="tag">通过 121</span><span class="tag">需复核 5</span><span class="tag">失败 2</span></div><div style="height:14px"></div><div class="progress green"><span style="width:94.5%"></span></div><p class="page-desc" style="margin-top:12px">两项失败均来自热线原始证据缺失，未产生错误确定性结论。</p></div></div></div><div style="height:15px"></div><div class="panel table-wrap"><table class="table"><thead><tr><th>评测任务</th><th>变更内容</th><th>样本数</th><th>通过</th><th>警告</th><th>失败</th><th>耗时</th><th>状态</th></tr></thead><tbody><tr><td><b>REG-20260721</b></td><td>风险规则 v3.8.2</td><td>128</td><td>121</td><td>5</td><td>2</td><td>34 分钟</td><td>${status('通过','green')}</td></tr><tr><td><b>REG-20260718</b></td><td>舆情 Skill v2.4.1</td><td>80</td><td>72</td><td>6</td><td>2</td><td>26 分钟</td><td>${status('通过','green')}</td></tr><tr><td><b>REG-20260715</b></td><td>主体识别规则更新</td><td>240</td><td>239</td><td>1</td><td>0</td><td>12 分钟</td><td>${status('通过','green')}</td></tr></tbody></table></div></section>`}
+
+    function monitoringPage(){const bars=[42,58,51,67,72,65,81,76,88,92,84,96];return `<section class="page narrow">${pageHead('运行监控','查看任务量、成功率、响应时间、成本和异常数据源。',action('刷新数据','','refresh'))}<div class="metrics">${metric('今日任务','428','峰值并发 18','good')}${metric('任务成功率','98.2%','过去 24 小时','good')}${metric('P95 完成时间','2分48秒','深度调查任务','warn')}${metric('待处理异常','6','3 项来自数据源','warn')}</div><div class="grid-2"><div class="panel"><div class="panel-head"><div><div class="panel-title">24 小时任务量</div><div class="panel-subtitle">风险调查与招商分析</div></div><div class="tag-row"><span class="tag blue">风险调查</span><span class="tag">招商分析</span></div></div><div class="panel-body"><div class="chart">${bars.map((h,i)=>`<div class="bar-group"><span class="bar" style="height:${h}%"></span><span class="bar alt" style="height:${Math.max(18,h-24)}%"></span><span class="bar-label">${i*2}:00</span></div>`).join('')}</div></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">调用分布</div><div class="panel-subtitle">按 Skill 与工具统计</div></div></div><div class="panel-body"><div class="fact-list"><div class="fact"><span class="fact-label">主体识别</span><b>1,284</b></div><div class="fact"><span class="fact-label">标准风险</span><b>836</b></div><div class="fact"><span class="fact-label">舆情搜索</span><b>642</b></div><div class="fact"><span class="fact-label">证据核验</span><b>594</b></div><div class="fact"><span class="fact-label">评分计算</span><b>418</b></div><div class="fact"><span class="fact-label">报告生成</span><b>186</b></div></div></div></div></div><div style="height:15px"></div><div class="panel table-wrap"><div class="panel-head"><div class="panel-title">最近异常</div>${action('查看全部','','allErrors')}</div><table class="table"><thead><tr><th>时间</th><th>任务</th><th>组件</th><th>异常</th><th>影响</th><th>处理状态</th></tr></thead><tbody><tr><td>17:38</td><td>#AT-20260722-0188</td><td>内部企业风险库</td><td>网络连接失败</td><td>降级为离线快照</td><td>${status('已降级','amber')}</td></tr><tr><td>17:21</td><td>#AT-20260722-0183</td><td>公开搜索引擎</td><td>请求达到限流</td><td>等待 30 秒重试</td><td>${status('已恢复','green')}</td></tr><tr><td>16:54</td><td>#AT-20260722-0177</td><td>报告生成</td><td>模板字段缺失</td><td>转人工补充</td><td>${status('待处理','red')}</td></tr></tbody></table></div></section>`}
+
+    function auditPage(){return `<section class="page narrow">${pageHead('审计日志','追踪用户、Agent、Skills、数据查询、规则版本和人工操作。',action('导出审计包','','exportAudit'))}<div class="toolbar"><input class="field" placeholder="搜索任务、企业或操作人"><select class="select"><option>全部事件</option><option>Agent 调用</option><option>数据查询</option><option>人工操作</option><option>配置变更</option></select><input class="field" style="min-width:150px" value="2026-07-22"></div><div class="panel table-wrap"><table class="table"><thead><tr><th>时间</th><th>事件</th><th>主体</th><th>操作人</th><th>对象</th><th>结果</th><th>追踪ID</th></tr></thead><tbody><tr data-open="审计事件"><td>17:42:18</td><td>人工确认</td><td>北京童程童慧科技有限公司</td><td>王晨</td><td>门店关闭主体归属</td><td>${status('确认 2 家','green')}</td><td>tr_92f18a</td></tr><tr><td>17:41:52</td><td>Skill 调用</td><td>北京童程童慧科技有限公司</td><td>Atlas</td><td>证据交叉核验 v1.8</td><td>${status('部分完成','amber')}</td><td>tr_92f18a</td></tr><tr><td>17:40:33</td><td>数据查询</td><td>北京童程童慧科技有限公司</td><td>Atlas</td><td>公开舆情 · 近12个月</td><td>${status('返回 19 条','green')}</td><td>tr_92f18a</td></tr><tr><td>17:39:06</td><td>数据查询</td><td>北京童程童慧科技有限公司</td><td>Atlas</td><td>内部 ES · 风险标签</td><td>${status('使用离线快照','amber')}</td><td>tr_92f18a</td></tr><tr><td>16:18:42</td><td>规则发布</td><td>全局</td><td>陈立</td><td>风险规则 v3.8.2</td><td>${status('发布成功','green')}</td><td>cfg_a8012c</td></tr></tbody></table></div></section>`}
+
+    function accessPage(){return `<section class="page narrow">${pageHead('用户与权限','管理用户、角色、数据访问边界和高风险操作审批。',action('邀请用户','primary','inviteUser'))}<div class="grid-3"><div class="panel"><div class="panel-body"><div class="panel-title">运营人员</div><div class="metric-value" style="margin-top:12px">24</div><div class="panel-subtitle">发起任务、查看企业、处理普通确认</div></div></div><div class="panel"><div class="panel-body"><div class="panel-title">风险审核人</div><div class="metric-value" style="margin-top:12px">6</div><div class="panel-subtitle">调整评分、审批报告、确认重大风险</div></div></div><div class="panel"><div class="panel-body"><div class="panel-title">平台管理员</div><div class="metric-value" style="margin-top:12px">3</div><div class="panel-subtitle">管理能力、数据源、模型和权限</div></div></div></div><div style="height:15px"></div><div class="panel"><div class="panel-head"><div><div class="panel-title">角色权限矩阵</div><div class="panel-subtitle">高风险操作采用最小权限和二次审批</div></div>${action('编辑权限','','editAccess')}</div><div class="panel-body table-wrap"><table class="matrix"><thead><tr><th>权限</th><th>运营人员</th><th>高级运营</th><th>风险审核人</th><th>平台管理员</th><th>审计人员</th></tr></thead><tbody><tr><td>发起企业调查</td><td class="allow">✓</td><td class="allow">✓</td><td class="allow">✓</td><td class="allow">✓</td><td class="deny">—</td></tr><tr><td>查看内部风险数据</td><td class="allow">✓</td><td class="allow">✓</td><td class="allow">✓</td><td class="allow">✓</td><td class="allow">✓</td></tr><tr><td>调整风险评分</td><td class="deny">—</td><td class="allow">✓</td><td class="allow">✓</td><td class="allow">✓</td><td class="deny">—</td></tr><tr><td>发布正式报告</td><td class="deny">—</td><td class="deny">—</td><td class="allow">✓</td><td class="allow">✓</td><td class="deny">—</td></tr><tr><td>配置 Skills 与策略</td><td class="deny">—</td><td class="deny">—</td><td class="deny">—</td><td class="allow">✓</td><td class="deny">—</td></tr><tr><td>查看完整审计日志</td><td class="deny">—</td><td class="deny">—</td><td class="allow">✓</td><td class="allow">✓</td><td class="allow">✓</td></tr></tbody></table></div></div><div style="height:15px"></div><div class="panel table-wrap"><div class="panel-head"><div class="panel-title">最近用户</div><input class="field" style="width:160px;min-width:0" placeholder="搜索姓名或部门"></div><table class="table"><thead><tr><th>用户</th><th>部门</th><th>角色</th><th>数据范围</th><th>最后登录</th><th>状态</th></tr></thead><tbody><tr><td><b>王晨</b></td><td>企业风险运营</td><td>高级运营</td><td>全部企业</td><td>5分钟前</td><td>${status('正常','green')}</td></tr><tr><td><b>李宁</b></td><td>风险审核组</td><td>风险审核人</td><td>全部企业</td><td>18分钟前</td><td>${status('正常','green')}</td></tr><tr><td><b>赵可</b></td><td>招商服务组</td><td>运营人员</td><td>北京地区</td><td>2小时前</td><td>${status('正常','green')}</td></tr><tr><td><b>审计账户</b></td><td>内控审计</td><td>审计人员</td><td>只读</td><td>昨天</td><td>${status('正常','green')}</td></tr></tbody></table></div></section>`}
+
+    function agentPageV11(){return `<section class="agent-page">
+      <div class="agent-chat" id="agentChat">
+        <div class="date">今天 · 风险报告更新任务</div>
+        <div class="turn user"><div class="user-bubble">更新北京童程童慧科技有限公司的风险报告。重点核实失联、拖欠工资和门店关闭，只看旧报告后的新增变化。</div></div>
+        <div class="turn"><div class="agent-avatar">A</div><div>
+          <div class="agent-name">Atlas · 主体与任务已确认</div>
+          <div class="prose"><p>已将旧报告 v2 绑定到企业主体 <b>91110108MA01Q4K25F</b>，本次任务使用快照 <b>SNAP-20260729-0186</b>。我会核验最新工商、标准风险和公开负面信息，再生成可复核的新版本。</p></div>
+          <details class="activity" open><summary>查看 Agent 执行过程</summary><div class="activity-body">✓ 旧报告解析：识别 18 个章节、12 项历史风险<br>✓ 主体确认：信用代码、登记机关和法定代表人一致<br>✓ 工商核验：T+1 数据完成，发现 1 项人员变更<br>✓ 标准风险：司法 T+0、内部离线快照查询完成<br>✓ 公开检索：近 12 个月 19 条结果完成去重<br>● 人工复核：2 项主体归属、1 项评分调整待确认</div></details>
+        </div></div>
+        <div class="turn"><div class="agent-avatar">A</div><div>
+          <div class="agent-name">Atlas · 调查草稿</div>
+          <div class="result">
+            <div class="result-head"><div><div class="result-kicker">风险报告更新摘要</div><h3>新增 3 项重点经营风险</h3><div class="result-meta">北京童程童慧科技有限公司 · 快照 2026-07-29 17:40</div></div><div class="score">模型原始分<strong>8.0</strong>待人工确认</div></div>
+            <div class="result-summary">失联风险已有多来源支持；拖欠工资和门店关闭仍需核验主体归属与处置状态。旧报告中的其余结论没有实质变化。</div>
+            <div class="finding"><i class="severity"></i><div><div class="finding-title">失联风险 ${status('建议确认','red')}</div><div class="finding-copy">公开联系方式、历史内部标签和门店页面三类证据指向同一主体。</div></div><button class="citation">证据 [1–3]</button><div class="evidence-inline">[1] 国家企业信用信息公示系统 · 主体已核验 · T+1<br>[2] 权威企业数据 · 联系方式变更 · T+1<br>[3] 内部 ES 快照 · 历史失联标签 · 截止 2026-07-28</div></div>
+            <div class="finding"><i class="severity amber"></i><div><div class="finding-title">拖欠工资 ${status('待确认','amber')}</div><div class="finding-copy">近九十天出现多起投诉，投诉主体匹配度较高，但处理状态尚未同步。</div></div><button class="citation">证据 [4–5]</button><div class="evidence-inline">[4] 投诉平台 · 2026-07-13 · 主体高匹配<br>[5] 内部风险监测 · 处置状态待核验</div></div>
+            <div class="finding"><i class="severity amber"></i><div><div class="finding-title">门店关闭 ${status('主体待核验','amber')}</div><div class="finding-copy">五家门店出现关闭或注销线索，两家已确认属于目标企业，其余可能属于关联品牌。</div></div><button class="citation">证据 [6–8]</button><div class="evidence-inline">[6] 公开新闻 · 2026-07-14<br>[7] 门店页面 · 已核验 2 家<br>[8] 投诉平台 · 3 家关联关系待确认</div></div>
+            <div class="result-foot"><small>证据可追溯 8 / 10 · 8 个来源<span class="source-freshness">工商 T+1 · 司法 T+0 · 公开检索完成于 2026-07-29 17:40</span></small><div class="button-group">${action('继续追问','','focusPrompt')}${action('进入待办研判','primary','gotoReview')}</div></div>
+          </div>
+        </div></div>
+      </div>
+      <div class="composer-dock"><div class="composer-shell">
+        <div class="prompt-chips"><button class="chip" data-prompt="只看旧报告之后新增的风险。">只看新增风险</button><button class="chip" data-prompt="重新核验三家待确认门店的主体归属。">核验门店主体</button><button class="chip" data-prompt="解释模型原始分为什么是 8.0。">解释风险评分</button><button class="chip" data-prompt="列出每个数据源的截止时间和查询状态。">检查数据新鲜度</button></div>
+        <div class="composer"><button class="attach-report" data-action="attachReport">＋ 旧报告</button><textarea id="agentPrompt" placeholder="输入企业调查任务、补充要求，或继续追问…"></textarea><button class="send" id="sendPrompt">↑</button></div>
+        <div class="composer-note">已绑定旧报告 v2 · 正式结论需经过人工复核</div>
+      </div></div>
+    </section>`}
+
+    function reviewPage(){return `<section class="review-page">
+      ${pageHead('待办研判','集中完成主体确认、证据核验、人工改分和报告版本差异确认。',`${action('研判规则','','reviewGuide')}${action('确认并生成 DOCX','primary','finalizeDocx')}`)}
+      <div class="review-summary">${metric('待我研判','7','2 项已等待超过 24 小时','warn')}${metric('主体待确认','2','均涉及门店或品牌归属','warn')}${metric('评分待确认','3','最高调整建议 +1.8','')}${metric('今日已完成','18','无需审批，研判后直接生成','good')}</div>
+      <div class="review-workbench">
+        <aside class="review-column">
+          <div class="review-column-head"><div><div class="review-column-title">复核队列</div><div class="review-column-copy">按优先级与等待时间排序</div></div>${status('7','amber')}</div>
+          <div class="review-queue">
+            <button class="queue-item active"><div class="queue-title">北京童程童慧科技有限公司</div><div class="queue-meta"><span>高优先 · 3项发现</span><span>18分钟</span></div></button>
+            <button class="queue-item"><div class="queue-title">乾道投资控股集团有限公司</div><div class="queue-meta"><span>评分确认 · 1项</span><span>1小时</span></div></button>
+            <button class="queue-item"><div class="queue-title">京南新能源产业有限公司</div><div class="queue-meta"><span>来源异常 · 2项</span><span>4小时</span></div></button>
+            <button class="queue-item"><div class="queue-title">海淀启明教育科技有限公司</div><div class="queue-meta"><span>报告差异 · 5项</span><span>昨天</span></div></button>
+          </div>
+        </aside>
+        <section class="review-column">
+          <div class="review-main">
+            <div class="review-company"><div><h2>北京童程童慧科技有限公司</h2><div class="review-id">任务 #AT-20260729-0186 · 快照 SNAP-20260729-0186 · 旧报告 v2 → 草稿 v3</div></div>${status('高优先','red')}</div>
+            <div class="review-tabs"><button class="review-tab active" data-review-tab="findings">风险结论</button><button class="review-tab" data-review-tab="diff">报告差异</button><button class="review-tab" data-review-tab="score">评分调整</button></div>
+            <div class="review-pane active" data-review-pane="findings">
+              <div class="finding-review">
+                <div class="finding-review-top"><h3>失联风险</h3>${status('建议确认','red')}<span class="spacer"></span><span class="tag">3条证据</span></div>
+                <p>公开联系方式连续无法接通，历史内部标签和门店页面均支持该判断。三类证据主体一致。</p>
+                <div class="review-fields"><label class="review-field">结论<select class="select"><option>确认风险</option><option>降低严重度</option><option>驳回</option></select></label><label class="review-field">严重度<select class="select"><option>高</option><option>中</option><option>低</option></select></label></div>
+              </div>
+              <div class="finding-review">
+                <div class="finding-review-top"><h3>拖欠工资</h3>${status('待确认','amber')}<span class="spacer"></span><span class="tag">2条证据</span></div>
+                <p>投诉主体匹配度较高，但投诉处理状态未同步。建议保留为“存在公开投诉，结果待核验”。</p>
+                <div class="review-fields"><label class="review-field">结论<select class="select"><option>确认并保留限定语</option><option>补充调查</option><option>驳回</option></select></label><label class="review-field">主体归属<select class="select"><option>目标企业</option><option>关联企业</option><option>无法确认</option></select></label></div>
+              </div>
+              <div class="finding-review">
+                <div class="finding-review-top"><h3>门店关闭</h3>${status('主体待核验','amber')}<span class="spacer"></span><span class="tag">3条证据</span></div>
+                <p>两家门店已确认，三家只有品牌关联。不得将五家全部写成目标企业已关闭门店。</p>
+                <div class="review-fields"><label class="review-field">确认数量<input class="field" value="2 家"></label><label class="review-field">处理<select class="select"><option>确认2家，3家排除</option><option>继续调查3家</option><option>全部驳回</option></select></label></div>
+              </div>
+            </div>
+            <div class="review-pane" data-review-pane="diff">
+              <div class="report-diff">
+                <div class="diff-head"><div>旧报告 v2</div><div>草稿 v3</div></div>
+                <div class="diff-row"><div class="diff-old">企业经营情况总体稳定，<del>未发现明显失联风险</del>。</div><div class="diff-new">企业经营承压，<ins>多个公开联系方式无法接通，失联风险已由三类证据支持</ins>。</div></div>
+                <div class="diff-row"><div class="diff-old">门店经营状态未见明显异常。</div><div class="diff-new"><ins>已确认两家门店关闭；另有三家仅存在品牌关联，暂不归入目标企业。</ins></div></div>
+                <div class="diff-row"><div class="diff-old">风险评分：8.0。</div><div class="diff-new">模型原始分：8.0；<ins>建议人工调整至 9.8，待审核。</ins></div></div>
+              </div>
+            </div>
+            <div class="review-pane" data-review-pane="score">
+              <div class="score-adjust"><div class="score-box"><span>模型原始分</span><strong>8.0</strong></div><div class="score-arrow">→</div><div class="score-box"><span>人工调整后</span><strong>9.8</strong></div></div>
+              <div class="review-fields"><label class="review-field">调整原因<select class="select"><option>新增重大经营风险</option><option>风险严重度调整</option><option>模型特征缺失</option><option>其他</option></select></label><label class="review-field">生效方式<select class="select"><option>确认后写入当前报告</option><option>仅保存草稿</option></select></label></div>
+              <label class="review-field" style="margin-top:10px">说明<textarea class="field" style="min-height:92px;padding:10px">新增失联、欠薪投诉和两家门店关闭证据；评分模型未覆盖公开联系方式连续失效这一人工规则，建议上调 1.8 分。</textarea></label>
+            </div>
+          </div>
+          <div class="review-actions">${action('停止并补充查询','','requestMore')}${action('保存研判草稿','','saveReview')}${action('确认并生成正式 DOCX','primary','finalizeDocx')}</div>
+        </section>
+        <aside class="review-column review-evidence-column">
+          <div class="review-column-head"><div><div class="review-column-title">证据与数据新鲜度</div><div class="review-column-copy">结论必须可回到原始来源</div></div>${status('8/10','amber')}</div>
+          <div class="evidence-pane">
+            <table class="freshness-table"><thead><tr><th>来源</th><th>截止/查询时间</th><th>状态</th></tr></thead><tbody><tr><td>工商主档</td><td>2026-07-28</td><td>${status('T+1','green')}</td></tr><tr><td>司法风险</td><td>2026-07-29</td><td>${status('T+0','green')}</td></tr><tr><td>内部 ES</td><td>2026-07-28</td><td>${status('离线快照','amber')}</td></tr><tr><td>公开检索</td><td>07-29 17:40</td><td>${status('完成','green')}</td></tr></tbody></table>
+            <article class="evidence-card"><div class="evidence-source">国家企业信用信息公示系统</div><h4>企业登记主体与信用代码一致</h4><p>法定代表人、登记机关和住所与旧报告主体一致，主体绑定置信度 100%。</p><div class="evidence-meta"><span>官方核心源</span><span>主体已核验</span><span>2026-07-28</span></div></article>
+            <article class="evidence-card"><div class="evidence-source">公开投诉与门店页面</div><h4>欠薪投诉及门店关闭线索</h4><p>两家门店页面显示暂停营业；三家仅共享品牌名称，尚无登记主体证据。</p><div class="evidence-meta"><span>4条原始链接</span><span>2家已确认</span><span>3家待排除</span></div></article>
+            <article class="evidence-card"><div class="evidence-source">内部风险快照</div><h4>历史失联标签与联系方式变更</h4><p>当前网络无法访问在线 ES，本任务使用 2026-07-28 的已校验离线快照，不代表实时状态。</p><div class="evidence-meta"><span>快照可追溯</span><span>部分新鲜度</span></div></article>
+          </div>
+        </aside>
+      </div>
+    </section>`}
+
+    function adminPage(){const items=[
+      ['skills','S','Skills','业务能力、输入输出和版本'],
+      ['tools','T','工具','确定性服务与接口契约'],
+      ['strategies','策','任务策略','意图、步骤和人工门禁'],
+      ['sources','源','数据源','连接、映射和新鲜度'],
+      ['rules','规','规则与评分','风险规则、阈值和影子计算'],
+      ['templates','模','报告模板','章节、字段和发布版本'],
+      ['models','M','模型配置','模型路由与数据边界'],
+      ['evaluations','评','评测中心','黄金样本和回归结果'],
+      ['monitoring','监','运行监控','服务目标、异常和成本'],
+      ['audit','审','审计日志','任务、证据和人工操作'],
+      ['access','权','用户与权限','角色、数据范围和审批']
+    ];return `<section class="page narrow">${pageHead('管理后台','集中配置 Agent 能力、数据、规则、模型和质量治理；普通运营主流程不展示这些页面。',status('管理员可见','purple'))}<div class="admin-hub">${items.map(i=>`<button class="admin-card" data-goto="${i[0]}"><span class="admin-card-icon">${i[1]}</span><h3>${i[2]}</h3><p>${i[3]}</p></button>`).join('')}</div></section>`}
+
+    function tasksPageV11(){return `<section class="page narrow">${pageHead('调查任务','跟踪旧报告解析、数据查询、证据核验、人工复核和报告生成。',action('新建报告更新','primary','newTask'))}<div class="metrics">${metric('进行中','12','3 项正在查询外部来源','good')}${metric('等待人工复核','7','2 项超过 24 小时','warn')}${metric('本月已完成','186','平均端到端 18 分钟','good')}${metric('一次通过率','88.9%','较上月 +4.1%','good')}</div><div class="toolbar"><input class="field" placeholder="搜索任务或企业"><select class="select"><option>全部状态</option><option>调查中</option><option>待复核</option><option>已完成</option><option>部分完成</option></select><select class="select"><option>全部优先级</option><option>高优先</option><option>普通</option></select><span class="spacer"></span>${action('导出列表','','export')}</div><div class="panel table-wrap"><table class="table"><thead><tr><th>任务</th><th>企业</th><th>旧报告</th><th>状态</th><th>数据快照</th><th>负责人</th><th>更新时间</th><th></th></tr></thead><tbody><tr><td>#AT-20260729-0186</td><td><b>北京童程童慧科技有限公司</b></td><td>v2 → v3草稿</td><td>${status('等待复核','amber')}</td><td>07-29 17:40</td><td>王晨</td><td>5分钟前</td><td>${action('去复核','small','gotoReview')}</td></tr><tr><td>#AT-20260729-0185</td><td><b>乾道投资控股集团有限公司</b></td><td>v1 → v2草稿</td><td>${status('调查中','blue')}</td><td>07-29 17:28</td><td>李宁</td><td>12分钟前</td><td>${action('查看','','taskDetail')}</td></tr><tr><td>#AT-20260729-0182</td><td><b>华北智造科技有限公司</b></td><td>v4 → v5</td><td>${status('已完成','green')}</td><td>07-29 16:02</td><td>赵可</td><td>1小时前</td><td>${action('查看报告','','gotoReports')}</td></tr><tr><td>#AT-20260729-0179</td><td><b>中关村数据服务有限公司</b></td><td>v2 → v3</td><td>${status('已完成','green')}</td><td>07-29 15:18</td><td>王晨</td><td>2小时前</td><td>${action('查看报告','','gotoReports')}</td></tr><tr><td>#AT-20260728-0164</td><td><b>京南新能源产业有限公司</b></td><td>v1 → 草稿</td><td>${status('部分完成','red')}</td><td>ES 07-28</td><td>李宁</td><td>昨天</td><td>${action('查看异常','','taskDetail')}</td></tr></tbody></table></div></section>`}
+
+    function reportsPageV11(){return `<section class="page narrow">${pageHead('报告中心','统一管理风险报告草稿、人工复核、正式版本和新旧差异。',action('从旧报告更新','primary','newReport'))}<div class="metrics">${metric('待复核','3','最早等待 6 小时','warn')}${metric('本月生成','164','全部为风险报告','good')}${metric('正式归档','151','一次通过 88.9%','good')}${metric('平均人工处理','11 分钟','较基线下降 42%','good')}</div><div class="toolbar"><input class="field" placeholder="搜索报告或企业"><select class="select"><option>全部状态</option><option>草稿</option><option>待复核</option><option>正式版</option></select><select class="select"><option>全部风险等级</option><option>高风险</option><option>中风险</option><option>低风险</option></select></div><div class="panel table-wrap"><table class="table"><thead><tr><th>报告名称</th><th>版本</th><th>模型分 / 人工分</th><th>证据</th><th>状态</th><th>审核人</th><th>更新时间</th><th></th></tr></thead><tbody><tr><td><b>北京童程童慧科技有限公司_风险监测分析报告</b></td><td>v2 → v3草稿</td><td>8.0 / 9.8</td><td>8 / 10</td><td>${status('待复核','amber')}</td><td>待分配</td><td>10分钟前</td><td><div class="button-group">${action('版本差异','','gotoReview')}${action('预览','','previewReport')}</div></td></tr><tr><td><b>乾道投资控股集团有限公司_风险调查报告</b></td><td>v2</td><td>6.4 / 6.4</td><td>12 / 12</td><td>${status('正式版','green')}</td><td>李宁</td><td>1小时前</td><td>${action('预览','','previewReport')}</td></tr><tr><td><b>华北智造科技有限公司_风险监测分析报告</b></td><td>v5</td><td>3.2 / 3.2</td><td>9 / 9</td><td>${status('正式版','green')}</td><td>赵可</td><td>2小时前</td><td>${action('预览','','previewReport')}</td></tr><tr><td><b>京南新能源产业有限公司_风险提示报告</b></td><td>v1草稿</td><td>7.1 / —</td><td>6 / 9</td><td>${status('部分完成','red')}</td><td>—</td><td>昨天</td><td>${action('查看异常','','taskDetail')}</td></tr></tbody></table></div></section>`}
+
+    function tasksPageV12(){return `<section class="page narrow">${pageHead('调查任务','跟踪旧报告解析、离线数据查询、多引擎搜索、人工研判和 DOCX 生成。',action('新建报告更新','primary','newTask'))}<div class="metrics">${metric('进行中','12','3 项正在联合检索','good')}${metric('等待人工研判','7','2 项超过 24 小时','warn')}${metric('查询失败已停止','1','等待数据源恢复后重试','bad')}${metric('本月已完成','186','平均端到端 18 分钟','good')}</div><div class="toolbar"><input class="field" placeholder="搜索任务或企业"><select class="select"><option>全部状态</option><option>调查中</option><option>待研判</option><option>已完成</option><option>查询失败已停止</option></select><span class="spacer"></span>${action('导出列表','','export')}</div><div class="panel table-wrap"><table class="table"><thead><tr><th>任务</th><th>企业</th><th>旧报告</th><th>状态</th><th>数据快照</th><th>操作人</th><th>更新时间</th><th></th></tr></thead><tbody><tr><td>#AT-20260729-0186</td><td><b>北京童程童慧科技有限公司</b></td><td>v2 → v3草稿</td><td>${status('等待研判','amber')}</td><td>07-29 17:40</td><td>王晨</td><td>5分钟前</td><td>${action('去研判','small','gotoReview')}</td></tr><tr><td>#AT-20260729-0185</td><td><b>乾道投资控股集团有限公司</b></td><td>v1 → v2草稿</td><td>${status('联合检索中','blue')}</td><td>07-29 17:28</td><td>李宁</td><td>12分钟前</td><td>${action('查看','','taskDetail')}</td></tr><tr><td>#AT-20260729-0182</td><td><b>华北智造科技有限公司</b></td><td>v4 → v5</td><td>${status('已完成','green')}</td><td>07-29 16:02</td><td>赵可</td><td>1小时前</td><td>${action('查看报告','','gotoReports')}</td></tr><tr><td>#AT-20260728-0164</td><td><b>京南新能源产业有限公司</b></td><td>v1 → 草稿</td><td>${status('查询失败已停止','red')}</td><td>ES 07-28</td><td>李宁</td><td>昨天</td><td>${action('修复后重试','','taskDetail')}</td></tr></tbody></table></div></section>`}
+
+    function reportsPageV12(){return `<section class="page narrow">${pageHead('报告中心','统一管理风险报告草稿、人工研判结果、正式 DOCX 和新旧版本差异。',action('从旧报告更新','primary','newReport'))}<div class="metrics">${metric('待研判','3','最早等待 6 小时','warn')}${metric('本月生成','164','全部使用 V1 DOCX 模板','good')}${metric('正式 DOCX','151','PDF 功能后置','good')}${metric('平均人工处理','11 分钟','较基线下降 42%','good')}</div><div class="toolbar"><input class="field" placeholder="搜索报告或企业"><select class="select"><option>全部状态</option><option>草稿</option><option>待研判</option><option>正式 DOCX</option><option>查询失败已停止</option></select><select class="select"><option>全部风险等级</option><option>高风险 [8,10]</option><option>中高风险 [6,8)</option><option>中风险 [4,6)</option><option>中低风险 [2,4)</option><option>低风险 [0,2)</option></select></div><div class="panel table-wrap"><table class="table"><thead><tr><th>报告名称</th><th>版本</th><th>原始分 / 人工分</th><th>风险等级</th><th>状态</th><th>操作人</th><th>更新时间</th><th></th></tr></thead><tbody><tr><td><b>北京童程童慧科技有限公司_风险监测分析报告</b></td><td>v2 → v3草稿</td><td>8.0 / 9.8</td><td>${status('高风险','red')}</td><td>${status('待研判','amber')}</td><td>王晨</td><td>10分钟前</td><td><div class="button-group">${action('版本差异','','gotoReview')}${action('预览','','previewReport')}</div></td></tr><tr><td><b>乾道投资控股集团有限公司_风险调查报告</b></td><td>v2</td><td>6.4 / 6.4</td><td>${status('中高风险','amber')}</td><td>${status('正式 DOCX','green')}</td><td>李宁</td><td>1小时前</td><td>${action('预览','','previewReport')}</td></tr><tr><td><b>华北智造科技有限公司_风险监测分析报告</b></td><td>v5</td><td>3.2 / 3.2</td><td>${status('中低风险','blue')}</td><td>${status('正式 DOCX','green')}</td><td>赵可</td><td>2小时前</td><td>${action('预览','','previewReport')}</td></tr></tbody></table></div></section>`}
+
+    function rulesPageV12(){return `<section class="page narrow">${pageHead('规则与评分','V1 重新设计评分存储，保留现有评分规则，并分别保存原始分和人工分。',action('保存规则草稿','primary','newRuleDraft'))}<div class="metrics">${metric('评分范围','0–10','内部使用原始精度','')}${metric('最低分规则','3','失联、欠薪、闭店','good')}${metric('人工分','独立保存','无需审批，必须填写原因','')}${metric('下标签逻辑','暂不启用','已保留扩展字段','warn')}</div><div class="panel" style="margin-bottom:15px"><div class="panel-head"><div><div class="panel-title">风险等级区间</div><div class="panel-subtitle">边界已标准化；8分属于高风险，6分属于中高风险</div></div>${action('编辑','','editThreshold')}</div><div class="panel-body"><div class="thresholds"><div class="threshold"><div class="threshold-name">低风险</div><div class="threshold-value">[0,2)</div></div><div class="threshold medium"><div class="threshold-name">中低风险</div><div class="threshold-value">[2,4)</div></div><div class="threshold medium"><div class="threshold-name">中风险</div><div class="threshold-value">[4,6)</div></div><div class="threshold high"><div class="threshold-name">中高风险</div><div class="threshold-value">[6,8)</div></div><div class="threshold high"><div class="threshold-name">高风险</div><div class="threshold-value">[8,10]</div></div></div></div></div><div class="grid-2"><div class="panel"><div class="panel-head"><div class="panel-title">事件最低分</div></div><div class="panel-body"><dl><div class="definition"><dt>失联</dt><dd>原始分最低 6.0</dd></div><div class="definition"><dt>拖欠工资</dt><dd>原始分最低 6.0</dd></div><div class="definition"><dt>闭店</dt><dd>原始分最低 8.0</dd></div><div class="definition"><dt>多项同时命中</dt><dd>取最高最低分，不累加</dd></div></dl></div></div><div class="panel"><div class="panel-head"><div class="panel-title">人工调整</div></div><div class="panel-body"><dl><div class="definition"><dt>允许角色</dt><dd>风险运营人员</dd></div><div class="definition"><dt>保存方式</dt><dd>原始分、人工分分别保存</dd></div><div class="definition"><dt>必填信息</dt><dd>调整原因、说明、操作人、快照</dd></div><div class="definition"><dt>审核流程</dt><dd>V1 暂不设置</dd></div></dl></div></div></div></section>`}
+
+    function sourcesPageV12(){return `<section class="page narrow">${pageHead('数据源与搜索提供方','开发期使用 JSON/离线数据；生产通过只读适配器查询 ES，公开信息由多个搜索提供方联合检索。',action('添加提供方','primary','newSource'))}<div class="health-grid"><div class="health-card"><div class="health-top"><span class="health-name">开发数据</span>${status('可用','green')}</div><div class="health-value">JSON</div><div class="health-meta">company_data + 两个企业样本</div></div><div class="health-card"><div class="health-top"><span class="health-name">生产企业数据</span>${status('待联调','amber')}</div><div class="health-value">ES</div><div class="health-meta">只读查询，失败立即停止任务</div></div><div class="health-card"><div class="health-top"><span class="health-name">联合搜索</span>${status('接口已定义','blue')}</div><div class="health-value">N+M</div><div class="health-meta">主流搜索 N 个 + 大模型搜索 M 个</div></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th>提供方组</th><th>用途</th><th>开发期</th><th>生产策略</th><th>失败处理</th><th>状态</th><th></th></tr></thead><tbody><tr><td><b>离线 JSON 数据</b></td><td>工商、风险、字段映射</td><td>主要数据源</td><td>回归与应急快照</td><td>停止任务</td><td>${status('已就绪','green')}</td><td>${action('查看映射','','configureSource')}</td></tr><tr><td><b>生产 ES</b></td><td>企业与风险查询</td><td>Docker 可选模拟</td><td>只读主来源</td><td>停止任务并等待重试</td><td>${status('待连接','amber')}</td><td>${action('配置','','configureSource')}</td></tr><tr><td><b>主流搜索引擎组</b></td><td>网页、新闻、公开信息</td><td>模拟连接器</td><td>多提供方并行</td><td>任一必选提供方失败即停止</td><td>${status('待凭据','amber')}</td><td>${action('管理提供方','','configureSource')}</td></tr><tr><td><b>大模型搜索组</b></td><td>扩展查询与线索摘要</td><td>模拟连接器</td><td>多个联网模型并行</td><td>无原始引用不得形成风险</td><td>${status('待凭据','amber')}</td><td>${action('管理提供方','','configureSource')}</td></tr><tr><td><b>人工补充证据</b></td><td>链接、附件和说明</td><td>可用</td><td>兜底来源</td><td>要求主体确认</td><td>${status('已设计','green')}</td><td>${action('配置','','configureSource')}</td></tr></tbody></table></div></section>`}
+
+    function accessPageV12(){return `<section class="page narrow">${pageHead('用户与权限','V1 只有风险运营人员和平台管理员，不设置高级运营、审核人或二审。',action('邀请用户','primary','inviteUser'))}<div class="grid-2"><div class="panel"><div class="panel-body"><div class="panel-title">风险运营人员</div><div class="metric-value" style="margin-top:12px">24</div><div class="panel-subtitle">发起报告更新、核验证据、调整人工分、生成正式 DOCX</div></div></div><div class="panel"><div class="panel-body"><div class="panel-title">平台管理员</div><div class="metric-value" style="margin-top:12px">3</div><div class="panel-subtitle">管理能力、数据源、规则、模型、模板和用户</div></div></div></div><div style="height:15px"></div><div class="panel"><div class="panel-head"><div><div class="panel-title">V1 权限矩阵</div><div class="panel-subtitle">无需审批，但所有人工调整保留操作记录</div></div>${action('编辑权限','','editAccess')}</div><div class="panel-body table-wrap"><table class="matrix"><thead><tr><th>权限</th><th>风险运营人员</th><th>平台管理员</th></tr></thead><tbody><tr><td>发起报告更新</td><td class="allow">✓</td><td class="allow">✓</td></tr><tr><td>查看企业与风险数据</td><td class="allow">✓</td><td class="allow">✓</td></tr><tr><td>确认或驳回风险</td><td class="allow">✓</td><td class="allow">✓</td></tr><tr><td>调整人工分</td><td class="allow">✓</td><td class="allow">✓</td></tr><tr><td>生成正式 DOCX</td><td class="allow">✓</td><td class="allow">✓</td></tr><tr><td>配置 Skills、数据源和模型</td><td class="deny">—</td><td class="allow">✓</td></tr></tbody></table></div></div></section>`}
+
+    const pages={agent:agentPageV11,tasks:tasksPageV12,review:reviewPage,companies:companiesPage,reports:reportsPageV12,admin:adminPage,skills:skillsPage,tools:toolsPage,strategies:strategiesPage,sources:sourcesPageV12,rules:rulesPageV12,templates:templatesPage,models:modelsPage,evaluations:evaluationsPage,monitoring:monitoringPage,audit:auditPage,access:accessPageV12};
+    function render(page){state.page=pages[page]?page:'agent';$('#pageHost').innerHTML=pages[state.page]();$('#breadcrumb').textContent=pageNames[state.page];const adminPages=['skills','tools','strategies','sources','rules','templates','models','evaluations','monitoring','audit','access'];const navPage=adminPages.includes(state.page)?'admin':state.page;$$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.page===navPage));location.hash=state.page;$('#pageHost').scrollTop=0;bindPage();$('#sidebar').classList.remove('open')}
+    function toast(text){const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2100)}
+    function openDrawer(title,content){$('#drawerTitle').textContent=title;$('#drawerBody').innerHTML=content||drawerContent(title);$('#drawer').classList.add('open');$('#overlay').classList.add('open');$('#drawer').setAttribute('aria-hidden','false')}
+    function closeDrawer(){$('#drawer').classList.remove('open');$('#overlay').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true')}
+    function drawerContent(title){return `<div class="detail-section"><div class="detail-title">${title}</div><p class="page-desc">这是完整平台原型中的配置抽屉。正式实现会根据页面展示对应表单、版本、权限和测试结果。</p></div><div class="detail-section"><div class="detail-title">基本配置</div><label class="definition"><span>名称</span><input class="field" value="${title}" style="min-width:0;width:100%"></label><label class="definition"><span>状态</span><select class="select"><option>启用</option><option>测试</option><option>停用</option></select></label><label class="definition"><span>说明</span><textarea class="field" style="height:90px;padding:10px;min-width:0;width:100%">配置说明与变更原因</textarea></label></div><div class="detail-section"><div class="detail-title">版本与审计</div><dl><div class="definition"><dt>当前版本</dt><dd>v1.0</dd></div><div class="definition"><dt>修改人</dt><dd>石一航</dd></div><div class="definition"><dt>生效方式</dt><dd>保存为草稿，测试通过后发布</dd></div></dl></div>`}
+    function bindPage(){
+      $$('.citation').forEach(b=>b.addEventListener('click',()=>b.closest('.finding').classList.toggle('open')));
+      $$('.toggle').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');toast(b.classList.contains('on')?'已启用':'已停用')}));
+      $$('.tab').forEach(b=>b.addEventListener('click',()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');toast(`已切换：${b.textContent}`)}));
+      $$('[data-review-tab]').forEach(b=>b.addEventListener('click',()=>{$$('[data-review-tab]').forEach(x=>x.classList.remove('active'));$$('[data-review-pane]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(`[data-review-pane="${b.dataset.reviewTab}"]`).classList.add('active')}));
+      $$('.queue-item').forEach(b=>b.addEventListener('click',()=>{$$('.queue-item').forEach(x=>x.classList.remove('active'));b.classList.add('active');toast(`已选择：${b.querySelector('.queue-title').textContent}`)}));
+      $$('[data-goto]').forEach(b=>b.addEventListener('click',()=>render(b.dataset.goto)));
+      $$('[data-open]').forEach(el=>el.addEventListener('click',e=>{if(e.target.closest('button'))return;openDrawer(el.dataset.open)}));
+      $$('[data-action]').forEach(b=>b.addEventListener('click',e=>handleActionV12(b.dataset.action,b.textContent.trim(),e)));
+      $$('.prompt-chips .chip').forEach(b=>b.addEventListener('click',()=>sendPrompt(b.dataset.prompt)));
+      const send=$('#sendPrompt'),input=$('#agentPrompt');if(send&&input){send.addEventListener('click',()=>sendPrompt());input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendPrompt()}})}
+    }
+    function sendPrompt(p){const input=$('#agentPrompt');const text=(p||(input&&input.value)||'').trim();if(!text)return;const chat=$('#agentChat');chat.insertAdjacentHTML('beforeend',`<div class="turn user"><div class="user-bubble"></div></div><div class="turn"><div class="agent-avatar">A</div><div><div class="agent-name">Atlas</div><div class="prose"><p>已收到。我会将这项要求加入当前调查，并更新相关结论、证据范围和报告草稿。</p></div></div></div>`);const bubbles=$$('.user-bubble',chat);bubbles[bubbles.length-1].textContent=text;if(input)input.value='';$('#pageHost').scrollTo({top:$('#pageHost').scrollHeight,behavior:'smooth'})}
+    function handleAction(name,label){if(name==='gotoReports'){render('reports');return}if(name==='gotoReview'){render('review');return}if(name==='focusPrompt'){const i=$('#agentPrompt');if(i)i.focus();return}if(name==='attachReport'){toast('旧报告已选择：企业风险监测分析报告_v2.docx');return}if(name==='generateReport'){const chat=$('#agentChat');chat.insertAdjacentHTML('beforeend',`<div class="turn"><div class="agent-avatar">A</div><div><div class="agent-name">Atlas · 报告已生成</div><div class="panel"><div class="panel-body"><div class="entity"><span class="entity-icon">DOC</span><div><div class="entity-name">北京童程童慧科技有限公司_风险提示报告_草稿.docx</div><div class="entity-meta">草稿 · 8 项证据 · 尚未提交人工复核</div></div><span class="spacer"></span><button class="btn small">预览</button></div></div></div></div></div>`);$('#pageHost').scrollTo({top:$('#pageHost').scrollHeight,behavior:'smooth'});return}if(name==='confirmExpand'||name==='skipExpand'){toast(name==='confirmExpand'?'已记录：展开关联主体调查':'已记录：暂不展开');return}if(name==='submitSecondReview'){toast('已保存复核意见并提交二审');return}if(name==='saveReview'){toast('复核草稿已保存');return}if(name==='requestMore'){toast('已退回 Agent 补充调查，当前意见已保留');return}if(['editSkill','newSkill','newTool','configure','newStrategy','editStrategy','newSource','configureSource','editThreshold','newRuleDraft','templateFields','editTemplate','addModel','editRouting','editAccess','inviteUser','previewReport','newReport','newTask','openCompany','ruleChanges','manageDataset','reviewGuide'].includes(name)){openDrawer(label);return}if(name==='runEval'){toast('完整评测已进入运行队列');return}toast(`${label}（原型交互）`)}
+    function handleActionV12(name,label,e){if(name==='finalizeDocx'){toast('人工分和研判结果已保存，正在使用 V1 模板生成正式 DOCX');return}if(name==='saveReview'){toast('研判草稿已保存');return}return handleAction(name,label,e)}
+    const themeSelect=$('#themeSelect'),themeStyles={editorial:$('#atlas-editorial-theme'),arctic:$('#atlas-arctic-theme'),graphite:$('#atlas-graphite-theme'),jade:$('#atlas-jade-theme')},themeNames={arctic:'冰川运营风',jade:'墨玉政企风'};function applyTheme(theme,notify=false){const next=themeNames[theme]?theme:'arctic';Object.entries(themeStyles).forEach(([name,style])=>style.disabled=name!==next);themeSelect.value=next;localStorage.setItem('atlas-theme',next);if(notify)toast(`已切换为${themeNames[next]}`)}applyTheme(localStorage.getItem('atlas-theme')||'arctic');themeSelect.addEventListener('change',e=>applyTheme(e.target.value,true));
+    $$('.nav-item').forEach(b=>b.addEventListener('click',()=>render(b.dataset.page)));$('#menuButton').addEventListener('click',()=>$('#sidebar').classList.add('open'));$('#overlay').addEventListener('click',closeDrawer);$('#closeDrawer').addEventListener('click',closeDrawer);$('#cancelDrawer').addEventListener('click',closeDrawer);$('#saveDrawer').addEventListener('click',()=>{closeDrawer();toast('配置已保存为草稿')});$('#globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){toast(`正在搜索：${e.target.value||'全部内容'}`)}});document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#globalSearch').focus()}if(e.key==='Escape')closeDrawer()});window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(p&&p!==state.page)render(p)});render(location.hash.slice(1)||'agent');
+  </script>
+</body>
+</html>

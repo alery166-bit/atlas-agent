@@ -1,0 +1,127 @@
+{
+  "index_patterns": ["atlas-company-event-v1-*"],
+  "priority": 500,
+  "version": 1,
+  "_meta": {"owner": "atlas", "schema_version": "1.0", "document_grain": "one company event"},
+  "template": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "10s",
+      "index.mapping.total_fields.limit": 700
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "_routing": {"required": true},
+      "properties": {
+        "event_id": {"type": "keyword"},
+        "atlas_company_id": {"type": "keyword"},
+        "company": {
+          "properties": {
+            "name": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "credit_code": {"type": "keyword"},
+            "source_company_id": {"type": "keyword"}
+          }
+        },
+        "event_group": {"type": "keyword"},
+        "event_type": {"type": "keyword"},
+        "event_subtype": {"type": "keyword"},
+        "risk_relevant": {"type": "boolean"},
+        "status": {"type": "keyword"},
+        "event_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "publish_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "start_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "end_date": {"type": "date", "format": "strict_date_optional_time||yyyy-MM-dd"},
+        "title": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 512}}},
+        "summary": {"type": "text"},
+        "authority": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+        "document_no": {"type": "keyword", "ignore_above": 256},
+        "amount": {
+          "properties": {
+            "raw": {"type": "keyword", "ignore_above": 256},
+            "value": {"type": "scaled_float", "scaling_factor": 100},
+            "currency": {"type": "keyword"},
+            "unit": {"type": "keyword"}
+          }
+        },
+        "change_detail": {
+          "properties": {
+            "item": {"type": "keyword", "ignore_above": 512},
+            "before": {"type": "text"},
+            "after": {"type": "text"}
+          }
+        },
+        "case_detail": {
+          "properties": {
+            "case_no": {"type": "keyword", "ignore_above": 256},
+            "case_name": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 512}}},
+            "case_brief": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "case_type": {"type": "keyword"},
+            "case_status": {"type": "keyword"},
+            "court": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "department": {"type": "keyword"},
+            "case_identity": {"type": "keyword"},
+            "target_execution_raw": {"type": "keyword", "ignore_above": 256}
+          }
+        },
+        "penalty_detail": {
+          "properties": {
+            "facts": {"type": "text"},
+            "decision": {"type": "text"},
+            "penalty_type": {"type": "keyword"}
+          }
+        },
+        "equity_detail": {
+          "properties": {
+            "registration_no": {"type": "keyword"},
+            "pledgor": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "pledgor_no": {"type": "keyword"},
+            "pledgee": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "pledgee_no": {"type": "keyword"},
+            "executor": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "frozen_company": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}}
+          }
+        },
+        "parties": {
+          "type": "nested",
+          "properties": {
+            "role": {"type": "keyword"},
+            "name": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "entity_id": {"type": "keyword"}
+          }
+        },
+        "risk": {
+          "properties": {
+            "risk_type": {"type": "keyword"},
+            "severity": {"type": "keyword"},
+            "evidence_grade": {"type": "keyword"},
+            "verification_status": {"type": "keyword"},
+            "evidence_ids": {"type": "keyword"}
+          }
+        },
+        "source": {
+          "properties": {
+            "system": {"type": "keyword"},
+            "table": {"type": "keyword"},
+            "record_id": {"type": "keyword"},
+            "company_id": {"type": "keyword"},
+            "source_updated_at": {"type": "date", "format": "strict_date_optional_time"},
+            "url": {"type": "keyword", "index": false}
+          }
+        },
+        "ingest": {
+          "properties": {
+            "batch_id": {"type": "keyword"},
+            "schema_version": {"type": "keyword"},
+            "content_hash": {"type": "keyword"},
+            "dedupe_key": {"type": "keyword"},
+            "ingested_at": {"type": "date", "format": "strict_date_optional_time"},
+            "deleted": {"type": "boolean"}
+          }
+        },
+        "source_payload": {"type": "object", "enabled": false},
+        "extensions": {"type": "flattened"}
+      }
+    }
+  }
+}

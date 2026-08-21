@@ -1,0 +1,15 @@
+.git
+.codex
+.agents
+**/target
+**/node_modules
+**/.data
+**/.wrangler
+**/dist
+.env
+work
+uploads
+outputs
+experiments
+*.zip
+data/company/**

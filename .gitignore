@@ -1,0 +1,39 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Build and dependency outputs
+**/node_modules/
+**/target/
+**/.next/
+**/.vinext/
+**/dist/
+**/build/
+**/coverage/
+**/.wrangler/
+**/.mvn-local/
+**/.data/
+**/__pycache__/
+*.py[cod]
+
+# IDE and local runtime files
+.idea/
+.vscode/
+*.iml
+*.log
+
+# Business inputs and generated artifacts
+data/
+outputs/
+work/
+uploads/
+experiments/
+
+# Deployment packages and office artifacts
+*.tar
+*.tar.gz
+*.zip
+*.docx
+*.pdf

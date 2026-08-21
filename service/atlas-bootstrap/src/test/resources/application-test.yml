@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:atlas-test-${random.uuid};MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  flyway:
+    enabled: true
+
+atlas:
+  skills:
+    require-published-for-new-tasks: false
+  golden:
+    root: target/test-golden-artifacts
+  runtime:
+    worker-concurrency: 1
+  storage:
+    root: ./target/test-files
+  report:
+    template-path: ../../data/templates/北京简熹和食品有限公司_企业风险监测分析报告20260714.docx
+    previous-root: ../..
+    template-alias: report-v1
+    managed-template-root: target/test-managed-report-templates
+  data:
+    provider: offline
+    offline:
+      root: classpath:fixtures/company-data
+      json-files:
+        - classpath:fixtures/company-json/sample-company.json

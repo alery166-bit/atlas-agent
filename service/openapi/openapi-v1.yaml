@@ -1,0 +1,3057 @@
+openapi: 3.1.0
+info:
+  title: Atlas Enterprise Agent API
+  version: 0.1.0
+  description: 单企业风险排查与 DOCX 报告生成 V1 API
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/files/previous-reports:
+    post:
+      summary: Historical compatibility import for a previous DOCX report
+      deprecated: true
+      description: This endpoint is retained only for historical data compatibility and is not used by the current investigation workflow.
+      operationId: uploadPreviousReport
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Safely stored report reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviousReportUpload'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/agent/messages:
+    post:
+      summary: Interpret one controlled natural-language task message
+      operationId: sendAgentMessage
+      description: >
+        Creates a risk report update task or reads an existing task. The
+        endpoint never confirms evidence, adjusts a score, or generates a
+        formal report from ambiguous natural language.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentMessageRequest'
+      responses:
+        '200':
+          description: Parsed message, assistant response and optional task workspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentMessageResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '403':
+          description: Task does not belong to the declared operator
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/agent/conversations:
+    get:
+      summary: List the current operator's conversations
+      operationId: listAgentConversations
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+      responses:
+        '200':
+          description: Conversations ordered by most recently updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentConversation'
+    post:
+      summary: Create a durable Agent conversation
+      operationId: createAgentConversation
+      parameters:
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentConversationRequest'
+      responses:
+        '201':
+          description: Conversation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentConversation'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/agent/conversations/{conversationId}:
+    get:
+      summary: Read one conversation and its inherited task context
+      operationId: getAgentConversation
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+        - $ref: '#/components/parameters/OperatorId'
+      responses:
+        '200':
+          description: Conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentConversation'
+        '403':
+          description: Conversation belongs to another operator
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/agent/conversations/{conversationId}/messages:
+    get:
+      summary: Read persisted messages in chronological order
+      operationId: listAgentConversationMessages
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+        - $ref: '#/components/parameters/OperatorId'
+      responses:
+        '200':
+          description: Persisted user and assistant messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentStoredMessage'
+    post:
+      summary: Send a message using durable multi-turn context
+      operationId: sendAgentConversationMessage
+      parameters:
+        - $ref: '#/components/parameters/ConversationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentMessageRequest'
+      responses:
+        '200':
+          description: Persisted assistant response with current task workspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentMessageResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '403':
+          description: Conversation or task belongs to another operator
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks:
+    get:
+      summary: List operator tasks with workflow summaries
+      operationId: listTasks
+      parameters:
+        - name: query
+          in: query
+          required: false
+          description: Case-insensitive match on task number, company query, or prompt
+          schema:
+            type: string
+            maxLength: 256
+        - name: status
+          in: query
+          required: false
+          description: Repeat this parameter to include multiple task statuses
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TaskStatus'
+        - name: operator_id
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 64
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          required: false
+          description: Opaque cursor returned by the previous page
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tasks ordered by updated time and task ID descending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskListPage'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+    post:
+      summary: 创建风险报告更新任务
+      operationId: createTask
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '202':
+          description: 任务已接受
+          headers:
+            Location:
+              schema:
+                type: string
+            X-Trace-Id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/tasks/{taskId}:
+    get:
+      summary: 查询任务
+      operationId: getTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: 任务不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/events:
+    get:
+      summary: 订阅任务事件
+      operationId: streamTaskEvents
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - name: Last-Event-ID
+          in: header
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 0
+      responses:
+        '200':
+          description: Server-Sent Events
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /api/tasks/{taskId}/execute:
+    post:
+      summary: 执行任务直到当前已实现边界或出现停等/失败
+      operationId: executeTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/WorkerId'
+      responses:
+        '200':
+          description: 执行后的任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '409':
+          description: 状态冲突或任务已被其他执行器领取
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/retry:
+    post:
+      summary: 从可重试的失败步骤断点续跑
+      operationId: retryTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/WorkerId'
+      responses:
+        '200':
+          description: 重试后的任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '409':
+          description: 当前失败不可重试
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/subject-confirmation:
+    post:
+      summary: 人工选择多候选企业主体
+      operationId: confirmTaskSubject
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectConfirmationRequest'
+      responses:
+        '200':
+          description: 主体已绑定
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '409':
+          description: 任务状态或候选已变化
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/steps:
+    get:
+      summary: 查询任务步骤与历次尝试
+      operationId: getTaskSteps
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 按步骤和尝试序号排序的执行记录
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskStep'
+  /api/tasks/{taskId}/snapshot:
+    get:
+      summary: 查询任务最新冻结快照
+      operationId: getTaskSnapshot
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 企业事实、工商变更、风险事件和来源状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSnapshot'
+        '404':
+          description: 任务不存在或尚未形成快照
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/workspace:
+    get:
+      summary: Get the complete operator workspace state for one task
+      operationId: getTaskWorkspace
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Aggregated task, data, score, evidence, confirmation and report state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskWorkspace'
+        '404':
+          description: Task does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/risk-score/calculate:
+    post:
+      summary: 基于冻结快照和已确认事件计算风险分
+      operationId: calculateRiskScore
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateRiskScoreRequest'
+      responses:
+        '200':
+          description: 幂等评分快照
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskScore'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/tasks/{taskId}/risk-score/calculate-from-confirmed-evidence:
+    post:
+      summary: 基于运营人员已确认的公开证据计算风险分
+      operationId: calculateRiskScoreFromConfirmedEvidence
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 幂等评分快照
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskScore'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/tasks/{taskId}/public-intelligence/search:
+    post:
+      summary: 按已确认企业身份词执行公开检索；同一查询计划幂等，新增身份词后执行补充检索
+      operationId: searchPublicIntelligence
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 检索批次和本次新增证据
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicIntelligenceRun'
+        '503':
+          description: 必选搜索 Provider 失败；失败批次仍会保存
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/company-aliases:
+    get:
+      summary: 查询企业全称、简称、曾用名、品牌、门店等已登记身份词
+      operationId: listCompanyAliases
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 企业身份词及主体关系
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyAlias'
+    post:
+      summary: 运营人员确认并补录企业身份词
+      operationId: addCompanyAlias
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyAliasRequest'
+      responses:
+        '201':
+          description: 已确认的企业身份词
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyAlias'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/tasks/{taskId}/public-intelligence/searches:
+    get:
+      summary: 查询公开检索批次和失败轨迹
+      operationId: listPublicIntelligenceSearches
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 检索批次列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchExecution'
+  /api/tasks/{taskId}/public-intelligence/evidence:
+    get:
+      summary: 查询公开检索候选证据
+      operationId: listPublicEvidence
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 去重、主体匹配和分级后的证据
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicEvidence'
+  /api/tasks/{taskId}/public-intelligence/evidence/model-review:
+    post:
+      summary: 启动后台模型辅助研判作业
+      description: 接口立即返回作业；模型建议只写入证据元数据，不会自动确认、驳回证据或修改风险评分。
+      operationId: reviewPublicEvidenceWithModel
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '202':
+          description: 后台作业已创建，或返回同一任务正在运行的作业
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceSemanticReviewJob'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          description: 任务或任务数据快照不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/public-intelligence/evidence/model-review/jobs/latest:
+    get:
+      summary: 查询任务最近一次模型辅助研判作业
+      operationId: getLatestEvidenceModelReviewJob
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 最近一次作业及实时进度
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceSemanticReviewJob'
+        '404':
+          description: 任务尚未启动过模型辅助研判
+  /api/tasks/{taskId}/public-intelligence/evidence/model-review/jobs/{reviewJobId}/cancel:
+    post:
+      summary: 请求取消模型辅助研判作业
+      description: 当前模型批次结束后取消，已持久化建议不会丢失。
+      operationId: cancelEvidenceModelReviewJob
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - name: reviewJobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 已登记取消请求或返回已结束作业
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceSemanticReviewJob'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/tasks/{taskId}/public-intelligence/evidence/{evidenceId}/content-snapshot:
+    post:
+      summary: 抓取并冻结候选证据网页正文；已有成功快照时幂等返回
+      operationId: capturePublicEvidenceContent
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/EvidenceId'
+      responses:
+        '200':
+          description: 网页正文快照或明确失败记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceContentSnapshot'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          description: 证据不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: 查询候选证据最新网页正文快照
+      operationId: getLatestPublicEvidenceContent
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/EvidenceId'
+      responses:
+        '200':
+          description: 最新网页正文快照
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceContentSnapshot'
+        '404':
+          description: 证据或正文快照不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/public-intelligence/content-snapshots:
+    get:
+      summary: 查询任务全部网页正文快照
+      operationId: listPublicEvidenceContentSnapshots
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 网页正文快照列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EvidenceContentSnapshot'
+  /api/tasks/{taskId}/public-intelligence/evidence/{evidenceId}/decision:
+    post:
+      summary: 运营人员确认或驳回公开证据
+      operationId: decidePublicEvidence
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/EvidenceId'
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceDecisionRequest'
+      responses:
+        '200':
+          description: 证据决定记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceDecision'
+        '400':
+          description: 决定不合法，或尝试确认没有可访问引用的 LEAD
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 证据不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/public-intelligence/decisions:
+    get:
+      summary: 查询公开证据确认与驳回历史
+      operationId: listPublicEvidenceDecisions
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 证据决定记录
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EvidenceDecision'
+  /api/tasks/{taskId}/public-intelligence/confirmed-events:
+    get:
+      summary: 查询由已确认证据转换出的风险事件
+      operationId: listConfirmedPublicRiskEvents
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 可参与评分的已确认风险事件
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConfirmedRiskEvent'
+  /api/tasks/{taskId}/risk-score:
+    get:
+      summary: 查询任务最新评分快照
+      operationId: getLatestRiskScore
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 最新评分快照
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskScore'
+        '404':
+          description: 尚未计算评分
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/risk-score/{scoreSnapshotId}/adjustments:
+    post:
+      summary: 人工调整风险分并记录原因
+      operationId: adjustRiskScore
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/ScoreSnapshotId'
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustRiskScoreRequest'
+      responses:
+        '200':
+          description: 调整后的分数、决定记录和最低分覆盖警告
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskScoreAdjustment'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+  /api/tasks/{taskId}/risk-score/history:
+    get:
+      summary: 查询任务全部版本化研判结果
+      operationId: getRiskAssessmentHistory
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 按版本倒序返回系统研判和人工调整记录
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RiskAssessmentRevision'
+  /api/tasks/{taskId}/risk-score/decisions:
+    get:
+      summary: 查询评分人工调整历史
+      operationId: getRiskScoreDecisions
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 按时间排序的操作记录
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OperatorDecision'
+  /api/tasks/{taskId}/operator-confirmation:
+    post:
+      summary: Confirm the current company, score, and evidence review state
+      operationId: confirmOperatorReview
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/OperatorId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorConfirmationRequest'
+      responses:
+        '200':
+          description: Review snapshot confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorConfirmation'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '409':
+          description: Task is not at an operator-confirmable workflow state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/operator-confirmations:
+    get:
+      summary: List operator review confirmations
+      operationId: listOperatorConfirmations
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Confirmations in reverse chronological order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OperatorConfirmation'
+  /api/tasks/{taskId}/reports:
+    post:
+      summary: 基于正式模板、最新数据快照、已确认公开证据和评分快照生成 DOCX
+      operationId: generateReport
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/OperatorId'
+      responses:
+        '202':
+          description: 报告已生成；同一输入命中幂等时返回已有版本
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportVersion'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '404':
+          description: 任务、正式模板、数据快照或评分快照不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: 查询任务的全部报告版本
+      operationId: listReports
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 按版本倒序返回
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportVersion'
+  /api/tasks/{taskId}/reports/{reportId}/diff:
+    get:
+      summary: 查询报告生成时冻结的评分与风险事件摘要
+      operationId: getReportDiff
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/ReportId'
+      responses:
+        '200':
+          description: 报告差异
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDiff'
+        '404':
+          description: 报告不存在或不属于当前任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/reports/{reportId}/download:
+    get:
+      summary: 下载已生成的 DOCX 报告
+      operationId: downloadReport
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/ReportId'
+      responses:
+        '200':
+          description: DOCX 文件
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+            X-Content-SHA256:
+              schema:
+                type: string
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: 报告尚未生成完成
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/tasks/{taskId}/reports/latest/download:
+    get:
+      summary: 始终下载任务当前最新的已生成 DOCX 报告
+      operationId: downloadLatestReport
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 最新报告 DOCX 文件
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+            X-Content-SHA256:
+              schema:
+                type: string
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: 当前任务还没有已生成报告
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 任务不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 报告不存在或不属于当前任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/companies/resolve:
+    get:
+      summary: 使用当前企业主数据 Provider 识别企业主体
+      operationId: resolveCompany
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 256
+      responses:
+        '200':
+          description: 唯一、多候选、未找到或查询失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResolution'
+  /api/platform/golden-acceptance/suites:
+    get:
+      summary: List business golden acceptance suites and their latest run
+      operationId: listGoldenAcceptanceSuites
+      responses:
+        '200':
+          description: Golden acceptance suites
+    post:
+      summary: Validate and register a business-confirmed golden manifest
+      operationId: importGoldenAcceptanceSuite
+      responses:
+        '200':
+          description: Stored suite; READY requires 20-50 confirmed cases and verified source artifacts
+  /api/platform/golden-acceptance/suites/{suiteId}:
+    get:
+      summary: Read one golden acceptance suite, manifest and run history
+      operationId: getGoldenAcceptanceSuite
+      responses:
+        '200':
+          description: Golden suite detail
+  /api/platform/golden-acceptance/suites/{suiteId}/evaluations:
+    post:
+      summary: Store one operator blind-test result and calculate formal gates
+      operationId: evaluateGoldenAcceptanceSuite
+      responses:
+        '200':
+          description: Immutable acceptance run result
+  /api/platform/operations:
+    get:
+      summary: Query real task, search and report runtime metrics
+      operationId: getPlatformOperations
+      responses:
+        '200':
+          description: Runtime snapshot; unavailable measurements are omitted and carry an UNKNOWN state
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/platform/audit:
+    get:
+      summary: Query the unified operational audit timeline
+      operationId: getPlatformAudit
+      responses:
+        '200':
+          description: Filtered audit entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+  /api/platform/audit/export:
+    get:
+      summary: Export filtered audit entries as UTF-8 CSV
+      operationId: exportPlatformAudit
+      responses:
+        '200':
+          description: CSV audit export
+          content:
+            text/csv:
+              schema:
+                type: string
+  /api/platform/configuration-changes:
+    get:
+      summary: Compare the before and after values of one configuration release
+      operationId: getConfigurationChange
+      responses:
+        '200':
+          description: Configuration release with both version payloads
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/platform/risk-rules/traceability:
+    get:
+      summary: 查询旧评分代码到当前执行逻辑的逐项追溯结果
+      operationId: getLegacyRiskRuleTraceability
+      responses:
+        '200':
+          description: 39项旧风险字典及评分规则迁移状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyRiskTraceability'
+components:
+  parameters:
+    ConversationId:
+      name: conversationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    OperatorId:
+      name: X-Operator-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        default: local-operator
+    WorkerId:
+      name: X-Worker-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        default: api-sync-worker
+    ScoreSnapshotId:
+      name: scoreSnapshotId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ReportId:
+      name: reportId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EvidenceId:
+      name: evidenceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    InvalidRequest:
+      description: 请求不合法
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    PreviousReportUpload:
+      type: object
+      required:
+        - file_id
+        - original_filename
+        - size
+        - content_sha256
+      properties:
+        file_id:
+          type: string
+        original_filename:
+          type: string
+        size:
+          type: integer
+          format: int64
+        content_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+    CreateAgentConversationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type:
+            - string
+            - 'null'
+          maxLength: 128
+    AgentConversation:
+      type: object
+      required:
+        - conversation_id
+        - title
+        - created_at
+        - updated_at
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        task_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        company_query:
+          type:
+            - string
+            - 'null'
+        previous_report_file_id:
+          type:
+            - string
+            - 'null'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AgentStoredMessage:
+      type: object
+      required:
+        - message_id
+        - role
+        - content
+        - required_inputs
+        - suggested_actions
+        - created_at
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [USER, ASSISTANT]
+        content:
+          type: string
+        response_type:
+          type:
+            - string
+            - 'null'
+          enum:
+            - TASK_CREATED
+            - TASK_STATUS
+            - NEEDS_INPUT
+            - UNSUPPORTED_SCOPE
+            - null
+        parsed_intent:
+          type:
+            - string
+            - 'null'
+          enum:
+            - CREATE_RISK_REPORT_TASK
+            - QUERY_TASK_STATUS
+            - UNSUPPORTED_SCOPE
+            - UNKNOWN
+            - null
+        company_query:
+          type:
+            - string
+            - 'null'
+        task_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        required_inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentRequiredInput'
+        suggested_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSuggestedAction'
+        created_at:
+          type: string
+          format: date-time
+    AgentMessageRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        task_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        previous_report_file_id:
+          type:
+            - string
+            - 'null'
+          maxLength: 256
+          deprecated: true
+          description: Historical compatibility field; ignored by new risk investigation tasks.
+    AgentMessageResponse:
+      type: object
+      required:
+        - conversation_id
+        - message_id
+        - type
+        - assistant_message
+        - parsed_intent
+        - required_inputs
+        - suggested_actions
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+        message_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - TASK_CREATED
+            - TASK_STATUS
+            - NEEDS_INPUT
+            - UNSUPPORTED_SCOPE
+        assistant_message:
+          type: string
+        parsed_intent:
+          type: string
+          enum:
+            - CREATE_RISK_REPORT_TASK
+            - QUERY_TASK_STATUS
+            - UNSUPPORTED_SCOPE
+            - UNKNOWN
+        company_query:
+          type:
+            - string
+            - 'null'
+        workspace:
+          anyOf:
+            - $ref: '#/components/schemas/TaskWorkspace'
+            - type: 'null'
+        required_inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentRequiredInput'
+        suggested_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSuggestedAction'
+    AgentRequiredInput:
+      type: object
+      required:
+        - code
+        - label
+        - required
+      properties:
+        code:
+          type: string
+          enum:
+            - COMPANY_QUERY
+            - TASK_REFERENCE
+        label:
+          type: string
+        required:
+          type: boolean
+    AgentSuggestedAction:
+      type: object
+      required:
+        - code
+        - label
+        - method
+        - endpoint
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        method:
+          type: string
+          enum: [GET, POST]
+        endpoint:
+          type: string
+    CreateTaskRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - prompt
+        - company_query
+      properties:
+        prompt:
+          type: string
+          maxLength: 4000
+        company_query:
+          type: string
+          maxLength: 256
+    Task:
+      type: object
+      required:
+        - task_id
+        - task_no
+        - intent
+        - status
+        - original_prompt
+        - company_query
+        - operator_id
+        - created_at
+        - updated_at
+        - events_url
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        task_no:
+          type: string
+        intent:
+          type: string
+          const: RISK_REPORT_UPDATE
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        original_prompt:
+          type: string
+        company_query:
+          type: string
+        previous_report_file_id:
+          type:
+            - string
+            - 'null'
+          description: 仅历史任务兼容，新任务不再使用
+        atlas_company_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        current_step:
+          type:
+            - string
+            - 'null'
+        failed_step:
+          type:
+            - string
+            - 'null'
+        error_code:
+          type:
+            - string
+            - 'null'
+        operator_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        events_url:
+          type: string
+    TaskStatus:
+      type: string
+      enum:
+        - CREATED
+        - RESOLVING_SUBJECT
+        - WAITING_SUBJECT_CONFIRMATION
+        - LOADING_PREVIOUS_REPORT
+        - COLLECTING_STRUCTURED_DATA
+        - SEARCHING_PUBLIC_INTELLIGENCE
+        - CALCULATING_RISK
+        - WAITING_OPERATOR_CONFIRMATION
+        - GENERATING_REPORT
+        - COMPLETED
+        - SOURCE_FAILED
+        - MODEL_FAILED
+        - REPORT_FAILED
+        - CANCELLED
+    TaskListPage:
+      type: object
+      required:
+        - items
+        - has_more
+        - page_size
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskListItem'
+        next_cursor:
+          type:
+            - string
+            - 'null'
+        has_more:
+          type: boolean
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+    TaskListItem:
+      type: object
+      required:
+        - task
+        - company_name
+        - evidence_progress
+        - confirmation_state
+        - readiness_blockers
+        - next_action
+      properties:
+        task:
+          $ref: '#/components/schemas/Task'
+        company_name:
+          type: string
+        risk:
+          anyOf:
+            - $ref: '#/components/schemas/TaskRiskSummary'
+            - type: 'null'
+        evidence_progress:
+          $ref: '#/components/schemas/EvidenceProgress'
+        confirmation_state:
+          type: string
+          enum: [NOT_READY, PENDING, VALID, STALE]
+        readiness_blockers:
+          type: array
+          items:
+            type: string
+            enum:
+              - DATA_SNAPSHOT_MISSING
+              - RISK_SCORE_MISSING
+              - RISK_SCORE_NOT_FROM_LATEST_DATA
+              - UNVERIFIED_EVIDENCE
+        next_action:
+          type: string
+          enum:
+            - EXECUTE_TASK
+            - CONFIRM_SUBJECT
+            - REVIEW_EVIDENCE
+            - CALCULATE_RISK
+            - CONFIRM_REVIEW
+            - GENERATE_REPORT
+            - RETRY_TASK
+            - RETRY_REPORT
+            - WAIT
+            - DOWNLOAD_REPORT
+            - NONE
+        latest_confirmation:
+          anyOf:
+            - $ref: '#/components/schemas/TaskConfirmationSummary'
+            - type: 'null'
+        latest_report:
+          anyOf:
+            - $ref: '#/components/schemas/TaskReportSummary'
+            - type: 'null'
+    TaskRiskSummary:
+      type: object
+      required:
+        - score_snapshot_id
+        - original_score
+        - manual_score
+        - original_risk_level
+        - manual_risk_level
+        - calculated_at
+      properties:
+        score_snapshot_id:
+          type: string
+          format: uuid
+        original_score:
+          type: number
+          minimum: 0
+          maximum: 10
+        manual_score:
+          type: number
+          minimum: 0
+          maximum: 10
+        original_risk_level:
+          type: string
+        manual_risk_level:
+          type: string
+        calculated_at:
+          type: string
+          format: date-time
+    TaskConfirmationSummary:
+      type: object
+      required:
+        - confirmation_id
+        - operator_id
+        - confirmed_evidence_count
+        - rejected_evidence_count
+        - confirmed_at
+      properties:
+        confirmation_id:
+          type: string
+          format: uuid
+        operator_id:
+          type: string
+        confirmed_evidence_count:
+          type: integer
+          minimum: 0
+        rejected_evidence_count:
+          type: integer
+          minimum: 0
+        confirmed_at:
+          type: string
+          format: date-time
+    TaskReportSummary:
+      type: object
+      required:
+        - report_id
+        - report_version_no
+        - status
+        - template_version
+      properties:
+        report_id:
+          type: string
+          format: uuid
+        report_version_no:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [GENERATING, GENERATED, FAILED, SUPERSEDED]
+        template_version:
+          type: string
+        generated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+    TaskWorkspace:
+      type: object
+      required:
+        - task
+        - subject_data_conflicts
+        - evidence_progress
+        - confirmation_state
+        - confirmation_ready
+        - report_generation_ready
+        - readiness_blockers
+        - next_action
+        - reports
+        - steps
+      properties:
+        task:
+          $ref: '#/components/schemas/Task'
+        data_snapshot:
+          anyOf:
+            - $ref: '#/components/schemas/DataSnapshot'
+            - type: 'null'
+        subject_data_conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubjectDataConflict'
+        risk_score:
+          anyOf:
+            - $ref: '#/components/schemas/RiskScore'
+            - type: 'null'
+        previous_report_score:
+          type: 'null'
+          description: 已退役；历史报告不再参与新任务评分
+        evidence_progress:
+          $ref: '#/components/schemas/EvidenceProgress'
+        latest_confirmation:
+          anyOf:
+            - $ref: '#/components/schemas/OperatorConfirmation'
+            - type: 'null'
+        confirmation_state:
+          type: string
+          enum: [NOT_READY, PENDING, VALID, STALE]
+        confirmation_ready:
+          type: boolean
+        report_generation_ready:
+          type: boolean
+        readiness_blockers:
+          type: array
+          items:
+            type: string
+            enum:
+              - DATA_SNAPSHOT_MISSING
+              - RISK_SCORE_MISSING
+              - RISK_SCORE_NOT_FROM_LATEST_DATA
+              - UNVERIFIED_EVIDENCE
+              - SUBJECT_DATA_CONFLICT
+        next_action:
+          type: string
+          enum:
+            - EXECUTE_TASK
+            - CONFIRM_SUBJECT
+            - REVIEW_EVIDENCE
+            - CALCULATE_RISK
+            - CONFIRM_REVIEW
+            - GENERATE_REPORT
+            - RETRY_TASK
+            - RETRY_REPORT
+            - WAIT
+            - DOWNLOAD_REPORT
+            - NONE
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportVersion'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskStep'
+    SubjectDataConflict:
+      type: object
+      required:
+        - code
+        - field_name
+        - master_value
+        - latest_change_value
+      properties:
+        code:
+          type: string
+          enum: [LEGAL_REPRESENTATIVE_CONFLICT]
+        field_name:
+          type: string
+        master_value:
+          type: string
+        latest_change_value:
+          type: string
+        changed_at:
+          type: [string, 'null']
+        source_system:
+          type: [string, 'null']
+        source_record_id:
+          type: [string, 'null']
+    PreviousReportScore:
+      type: object
+      required: [source_file_id, status, confidence]
+      properties:
+        source_file_id:
+          type: string
+        status:
+          type: string
+          enum: [AVAILABLE, MISSING_SCORE, UNAVAILABLE]
+        original_score:
+          type: [number, 'null']
+        manual_score:
+          type: [number, 'null']
+        risk_level:
+          type: [string, 'null']
+        report_date:
+          type: [string, 'null']
+          format: date
+        confidence:
+          type: number
+        data_as_of:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          minimum: 0
+          maximum: 1
+    LegacyRiskTraceability:
+      type: object
+      required: [current_runtime_mode, current_runtime_description, risk_dictionary, active_hard_coded_labels, feature_requirements, calculation_rules]
+      properties:
+        current_runtime_mode:
+          type: string
+        current_runtime_description:
+          type: string
+        risk_dictionary:
+          type: array
+          minItems: 39
+          maxItems: 39
+          items:
+            type: object
+            additionalProperties: true
+        active_hard_coded_labels:
+          type: array
+          minItems: 16
+          maxItems: 16
+          items:
+            type: object
+            additionalProperties: true
+        feature_requirements:
+          type: array
+          minItems: 10
+          items:
+            type: object
+            additionalProperties: true
+        calculation_rules:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    EvidenceProgress:
+      type: object
+      required:
+        - total
+        - confirmed
+        - rejected
+        - unverified
+        - captured_content
+        - failed_content_capture
+        - by_risk_type
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        confirmed:
+          type: integer
+          minimum: 0
+        rejected:
+          type: integer
+          minimum: 0
+        unverified:
+          type: integer
+          minimum: 0
+        captured_content:
+          type: integer
+          minimum: 0
+        failed_content_capture:
+          type: integer
+          minimum: 0
+        by_risk_type:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+    SubjectConfirmationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - source_system
+        - source_entity_id
+      properties:
+        source_system:
+          type: string
+          maxLength: 64
+        source_entity_id:
+          type: string
+          maxLength: 128
+    CompanyResolution:
+      type: object
+      required:
+        - status
+        - candidates
+        - source_statuses
+      properties:
+        status:
+          type: string
+          enum: [UNIQUE, AMBIGUOUS, NOT_FOUND, FAILED]
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyCandidate'
+        source_statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceStatus'
+    CompanyCandidate:
+      type: object
+      required:
+        - source_system
+        - source_entity_id
+        - canonical_name
+        - confidence
+      properties:
+        source_system:
+          type: string
+        source_entity_id:
+          type: string
+        canonical_name:
+          type: string
+        unified_credit_code:
+          type:
+            - string
+            - 'null'
+        registration_no:
+          type:
+            - string
+            - 'null'
+        legal_representative:
+          type:
+            - string
+            - 'null'
+        registration_status:
+          type:
+            - string
+            - 'null'
+        registered_address:
+          type:
+            - string
+            - 'null'
+        confidence:
+          type: number
+    SourceStatus:
+      type: object
+      required:
+        - source_system
+        - source_name
+        - query_status
+        - record_count
+        - fetched_at
+      properties:
+        source_system:
+          type: string
+        source_name:
+          type: string
+        query_status:
+          type: string
+          enum: [SUCCESS_WITH_RESULTS, SUCCESS_EMPTY, FAILED]
+        record_count:
+          type: integer
+          format: int64
+        data_as_of:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        fetched_at:
+          type: string
+          format: date-time
+        error_code:
+          type:
+            - string
+            - 'null'
+        message:
+          type:
+            - string
+            - 'null'
+    TaskStep:
+      type: object
+      required:
+        - task_step_id
+        - step_name
+        - sequence_no
+        - status
+        - attempt_no
+        - trace_id
+        - started_at
+      properties:
+        task_step_id:
+          type: string
+          format: uuid
+        step_name:
+          type: string
+        sequence_no:
+          type: integer
+        status:
+          type: string
+          enum: [RUNNING, COMPLETED, FAILED, SKIPPED]
+        attempt_no:
+          type: integer
+        input_hash:
+          type:
+            - string
+            - 'null'
+        output_ref:
+          type:
+            - string
+            - 'null'
+        trace_id:
+          type: string
+        error_code:
+          type:
+            - string
+            - 'null'
+        error_message:
+          type:
+            - string
+            - 'null'
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+    DataSnapshot:
+      type: object
+      required:
+        - snapshot_id
+        - task_id
+        - atlas_company_id
+        - snapshot_version
+        - company_facts
+        - company_changes
+        - risk_events
+        - source_statuses
+        - content_hash
+        - frozen_at
+      properties:
+        snapshot_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        atlas_company_id:
+          type: string
+          format: uuid
+        snapshot_version:
+          type: integer
+        company_facts:
+          type: object
+          additionalProperties: true
+        company_changes:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        risk_events:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        source_statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceStatus'
+        content_hash:
+          type: string
+        frozen_at:
+          type: string
+          format: date-time
+    CalculateRiskScoreRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        confirmed_events:
+          type: array
+          default: []
+          items:
+            $ref: '#/components/schemas/ConfirmedRiskEvent'
+    ConfirmedRiskEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - risk_type
+        - reference_id
+      properties:
+        risk_type:
+          type: string
+          description: 只有已确认的失联、欠薪或门店关闭事件会触发 V1 最低分
+          enum: [OUT_OF_CONTACT, WAGE_ARREARS, STORE_CLOSURE]
+        reference_id:
+          type: string
+        title:
+          type:
+            - string
+            - 'null'
+        evidence_ids:
+          type: array
+          default: []
+          items:
+            type: string
+    PublicIntelligenceRun:
+      type: object
+      required: [task_id, searches, evidence]
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        searches:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchExecution'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicEvidence'
+    SearchExecution:
+      type: object
+      required:
+        - search_batch_id
+        - task_id
+        - snapshot_id
+        - provider
+        - provider_mode
+        - query
+        - target_risk
+        - source_scope
+        - status
+        - result_count
+        - searched_at
+      properties:
+        search_batch_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        snapshot_id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        provider_mode:
+          type: string
+          enum: [SEARCH_ENGINE, LLM_SEARCH, FIXTURE]
+        query:
+          type: string
+        target_risk:
+          type: string
+          enum: [OUT_OF_CONTACT, WAGE_ARREARS, STORE_CLOSURE, OTHER]
+        source_scope:
+          type: string
+          description: Search source scope such as GENERAL_WEB or COMPLAINT_PLATFORMS.
+        status:
+          type: string
+          enum: [SUCCESS_WITH_RESULTS, SUCCESS_EMPTY, FAILED]
+        result_count:
+          type: integer
+          minimum: 0
+        failure_code:
+          type:
+            - string
+            - 'null'
+        failure_message:
+          type:
+            - string
+            - 'null'
+        searched_at:
+          type: string
+          format: date-time
+    PublicEvidence:
+      type: object
+      required:
+        - evidence_id
+        - task_id
+        - atlas_company_id
+        - search_batch_id
+        - risk_type
+        - source_provider
+        - title
+        - snippet
+        - query
+        - rank
+        - captured_at
+        - content_hash
+        - entity_match_status
+        - verification_status
+        - grade
+        - metadata
+      properties:
+        evidence_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        atlas_company_id:
+          type: string
+          format: uuid
+        search_batch_id:
+          type: string
+          format: uuid
+        risk_type:
+          type: string
+          enum: [OUT_OF_CONTACT, WAGE_ARREARS, STORE_CLOSURE, OTHER]
+        source_provider:
+          type: string
+        source_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+        normalized_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+        source_domain:
+          type:
+            - string
+            - 'null'
+        title:
+          type: string
+        snippet:
+          type: string
+        query:
+          type: string
+        rank:
+          type: integer
+          minimum: 1
+        published_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        captured_at:
+          type: string
+          format: date-time
+        content_hash:
+          type: string
+        entity_match_status:
+          type: string
+          enum: [MATCHED, POSSIBLE_MATCH, MISMATCHED]
+        verification_status:
+          type: string
+          enum: [UNVERIFIED, CONFIRMED, REJECTED]
+        grade:
+          type: string
+          enum: [C, LEAD]
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    EvidenceSemanticReviewRun:
+      type: object
+      required:
+        - task_id
+        - provider
+        - model
+        - reviewed_count
+        - failed_count
+        - suggestions
+        - reviewed_at
+        - operator_decision_required
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        model:
+          type: string
+        reviewed_count:
+          type: integer
+          minimum: 0
+        failed_count:
+          type: integer
+          minimum: 0
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceSemanticSuggestion'
+        reviewed_at:
+          type: string
+          format: date-time
+        operator_decision_required:
+          type: boolean
+          const: true
+    EvidenceSemanticReviewJob:
+      type: object
+      required:
+        - review_job_id
+        - task_id
+        - status
+        - total_count
+        - processed_count
+        - reviewed_count
+        - failed_count
+        - model_score_evidence_ids
+        - cancel_requested
+        - created_at
+        - updated_at
+      properties:
+        review_job_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [QUEUED, RUNNING, CANCEL_REQUESTED, SUCCEEDED, PARTIAL_FAILED, FAILED, CANCELLED]
+        total_count:
+          type: integer
+          minimum: 0
+        processed_count:
+          type: integer
+          minimum: 0
+        reviewed_count:
+          type: integer
+          minimum: 0
+        failed_count:
+          type: integer
+          minimum: 0
+        provider:
+          type: string
+        model:
+          type: string
+        model_suggested_score:
+          type: number
+          minimum: 0
+          maximum: 10
+          description: 模型高置信风险类型按已发布事件保底规则映射出的参考分，不参与正式评分计算。
+        model_suggested_risk_level:
+          type: string
+          enum: [LOW, MEDIUM_LOW, MEDIUM, MEDIUM_HIGH, HIGH]
+        model_score_evidence_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        advisory_rule_version:
+          type: string
+        error_message:
+          type: string
+        cancel_requested:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    EvidenceSemanticSuggestion:
+      type: object
+      required: [evidence_id, relevance, risk_type, confidence, reason, summary]
+      properties:
+        evidence_id:
+          type: string
+          format: uuid
+        relevance:
+          type: string
+          enum: [RELEVANT, IRRELEVANT, UNCERTAIN]
+        risk_type:
+          type: string
+          enum: [OUT_OF_CONTACT, WAGE_ARREARS, STORE_CLOSURE, OTHER]
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        reason:
+          type: string
+          maxLength: 500
+        summary:
+          type: string
+          maxLength: 1000
+    CompanyAliasRequest:
+      type: object
+      additionalProperties: false
+      required: [alias_name, alias_type, relation, source_evidence]
+      properties:
+        alias_name:
+          type: string
+          minLength: 1
+          maxLength: 256
+        alias_type:
+          type: string
+          enum: [SHORT_NAME, FORMER_NAME, BRAND, STORE, WEBSITE, SOCIAL_ACCOUNT]
+        relation:
+          type: string
+          enum: [SAME_LEGAL_ENTITY, FORMER_IDENTITY, OWNED_BRAND, OPERATED_STORE, FRANCHISE_STORE, OTHER]
+        source_evidence:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    CompanyAlias:
+      type: object
+      required:
+        - alias_id
+        - atlas_company_id
+        - alias_name
+        - alias_type
+        - relation
+        - verification_status
+        - source_system
+        - created_at
+        - updated_at
+      properties:
+        alias_id:
+          type: string
+          format: uuid
+        atlas_company_id:
+          type: string
+          format: uuid
+        alias_name:
+          type: string
+        alias_type:
+          type: string
+          enum: [LEGAL_NAME, SHORT_NAME, FORMER_NAME, BRAND, STORE, WEBSITE, SOCIAL_ACCOUNT]
+        relation:
+          type: string
+          enum: [SAME_LEGAL_ENTITY, FORMER_IDENTITY, OWNED_BRAND, OPERATED_STORE, FRANCHISE_STORE, OTHER]
+        verification_status:
+          type: string
+          enum: [CONFIRMED, REJECTED]
+        source_system:
+          type: string
+        source_record_id:
+          type: [string, 'null']
+        source_evidence:
+          type: [string, 'null']
+        created_by:
+          type: [string, 'null']
+        valid_from:
+          type: [string, 'null']
+          format: date-time
+        valid_to:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    EvidenceDecisionRequest:
+      type: object
+      additionalProperties: false
+      required: [decision, reason]
+      properties:
+        decision:
+          type: string
+          enum: [CONFIRMED, REJECTED]
+        reason:
+          type: string
+          minLength: 1
+    EvidenceContentSnapshot:
+      type: object
+      required:
+        - content_snapshot_id
+        - task_id
+        - evidence_id
+        - status
+        - requested_url
+        - byte_length
+        - truncated
+        - captured_at
+      properties:
+        content_snapshot_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        evidence_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [CAPTURED, FAILED]
+        requested_url:
+          type: string
+          format: uri
+        final_url:
+          type:
+            - string
+            - 'null'
+          format: uri
+        http_status:
+          type:
+            - integer
+            - 'null'
+        content_type:
+          type:
+            - string
+            - 'null'
+        raw_content:
+          type:
+            - string
+            - 'null'
+        extracted_text:
+          type:
+            - string
+            - 'null'
+        raw_content_hash:
+          type:
+            - string
+            - 'null'
+        extracted_text_hash:
+          type:
+            - string
+            - 'null'
+        byte_length:
+          type: integer
+          format: int64
+          minimum: 0
+        truncated:
+          type: boolean
+        failure_code:
+          type:
+            - string
+            - 'null'
+        failure_message:
+          type:
+            - string
+            - 'null'
+        captured_at:
+          type: string
+          format: date-time
+    EvidenceDecision:
+      type: object
+      required:
+        - decision_id
+        - task_id
+        - evidence_id
+        - decision
+        - reason
+        - operator_id
+        - decided_at
+      properties:
+        decision_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        evidence_id:
+          type: string
+          format: uuid
+        decision:
+          type: string
+          enum: [CONFIRMED, REJECTED]
+        reason:
+          type: string
+        operator_id:
+          type: string
+        decided_at:
+          type: string
+          format: date-time
+    RiskScore:
+      type: object
+      required:
+        - score_snapshot_id
+        - task_id
+        - data_snapshot_id
+        - rule_calculated_score
+        - event_floor_score
+        - original_score
+        - manual_score
+        - original_risk_level
+        - manual_risk_level
+        - rule_version
+        - engine_version
+        - input_hash
+        - rule_hits
+        - calculated_at
+      properties:
+        score_snapshot_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        data_snapshot_id:
+          type: string
+          format: uuid
+        legacy_score:
+          type:
+            - number
+            - 'null'
+          minimum: 0
+          maximum: 10
+        rule_calculated_score:
+          type: number
+          minimum: 0
+          maximum: 10
+        event_floor_score:
+          type: number
+          minimum: 0
+          maximum: 10
+        original_score:
+          type: number
+          minimum: 0
+          maximum: 10
+        manual_score:
+          type: number
+          minimum: 0
+          maximum: 10
+        original_risk_level:
+          $ref: '#/components/schemas/RiskLevel'
+        manual_risk_level:
+          $ref: '#/components/schemas/RiskLevel'
+        rule_version:
+          type: string
+        engine_version:
+          type: string
+        input_hash:
+          type: string
+        rule_hits:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskRuleHit'
+        calculated_at:
+          type: string
+          format: date-time
+    RiskLevel:
+      type: string
+      enum: [LOW, MEDIUM_LOW, MEDIUM, MEDIUM_HIGH, HIGH]
+    RiskRuleHit:
+      type: object
+      required:
+        - rule_code
+        - rule_name
+        - score
+        - score_role
+        - references
+      properties:
+        rule_code:
+          type: string
+        rule_name:
+          type: string
+        risk_type:
+          type:
+            - string
+            - 'null'
+        score:
+          type: number
+        score_role:
+          type: string
+          enum: [RULE_SCORE, EVENT_FLOOR]
+        references:
+          type: array
+          items:
+            type: string
+    RiskAssessmentLabel:
+      type: object
+      required: [label_name, risk_type, source_type, references]
+      properties:
+        label_code:
+          type: [string, 'null']
+        label_name:
+          type: string
+        risk_type:
+          type: string
+        source_type:
+          type: string
+        score_contribution:
+          type: [number, 'null']
+        confidence:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 1
+        references:
+          type: array
+          items:
+            type: string
+    RiskAssessmentRevision:
+      type: object
+      required:
+        - assessment_revision_id
+        - task_id
+        - score_snapshot_id
+        - data_snapshot_id
+        - revision_no
+        - trigger_type
+        - rule_calculated_score
+        - event_floor_score
+        - original_score
+        - final_score
+        - original_risk_level
+        - final_risk_level
+        - rule_version
+        - engine_version
+        - source_labels
+        - rule_labels
+        - model_labels
+        - final_labels
+        - actor_type
+        - actor_id
+        - reason_code
+        - reason_text
+        - created_at
+      properties:
+        assessment_revision_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        score_snapshot_id:
+          type: string
+          format: uuid
+        data_snapshot_id:
+          type: string
+          format: uuid
+        revision_no:
+          type: integer
+          minimum: 1
+        trigger_type:
+          type: string
+          enum: [SYSTEM_CALCULATION, MANUAL_SCORE_ADJUSTMENT]
+        legacy_score:
+          type: [number, 'null']
+        rule_calculated_score:
+          type: number
+        event_floor_score:
+          type: number
+        original_score:
+          type: number
+        final_score:
+          type: number
+        original_risk_level:
+          $ref: '#/components/schemas/RiskLevel'
+        final_risk_level:
+          $ref: '#/components/schemas/RiskLevel'
+        rule_version:
+          type: string
+        engine_version:
+          type: string
+        source_labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskAssessmentLabel'
+        rule_labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskAssessmentLabel'
+        model_labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskAssessmentLabel'
+        final_labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskAssessmentLabel'
+        actor_type:
+          type: string
+        actor_id:
+          type: string
+        reason_code:
+          type: string
+        reason_text:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    AdjustRiskScoreRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - manual_score
+        - reason_code
+        - reason_text
+      properties:
+        manual_score:
+          type: number
+          minimum: 0
+          maximum: 10
+        reason_code:
+          type: string
+          enum:
+            - EVIDENCE_CORRECTION
+            - ENTITY_MISMATCH
+            - EVENT_RESOLVED
+            - ADDITIONAL_CONTEXT
+            - RULE_LIMITATION
+            - OTHER
+        reason_text:
+          type: string
+          minLength: 1
+    RiskScoreAdjustment:
+      type: object
+      required: [score, decision, floor_override_warning]
+      properties:
+        score:
+          $ref: '#/components/schemas/RiskScore'
+        decision:
+          $ref: '#/components/schemas/OperatorDecision'
+        floor_override_warning:
+          type: boolean
+    OperatorDecision:
+      type: object
+      required:
+        - decision_id
+        - task_id
+        - target_type
+        - target_id
+        - decision_type
+        - after_json
+        - reason_code
+        - reason_text
+        - operator_id
+        - created_at
+      properties:
+        decision_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        target_type:
+          type: string
+        target_id:
+          type: string
+          format: uuid
+        decision_type:
+          type: string
+        before_json:
+          type:
+            - string
+            - 'null'
+        after_json:
+          type: string
+        reason_code:
+          type: string
+        reason_text:
+          type: string
+        operator_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    OperatorConfirmationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        note:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000
+    OperatorConfirmation:
+      type: object
+      required:
+        - confirmation_id
+        - task_id
+        - data_snapshot_id
+        - score_snapshot_id
+        - review_state_hash
+        - confirmed_evidence_count
+        - rejected_evidence_count
+        - operator_id
+        - note
+        - confirmed_at
+      properties:
+        confirmation_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        data_snapshot_id:
+          type: string
+          format: uuid
+        score_snapshot_id:
+          type: string
+          format: uuid
+        review_state_hash:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        confirmed_evidence_count:
+          type: integer
+          minimum: 0
+        rejected_evidence_count:
+          type: integer
+          minimum: 0
+        operator_id:
+          type: string
+        note:
+          type: string
+        confirmed_at:
+          type: string
+          format: date-time
+    ReportVersion:
+      type: object
+      required:
+        - report_id
+        - task_id
+        - atlas_company_id
+        - template_version
+        - report_version_no
+        - status
+        - input_hash
+        - data_snapshot_id
+        - score_snapshot_id
+        - diff
+        - generated_by
+      properties:
+        report_id:
+          type: string
+          format: uuid
+        task_id:
+          type: string
+          format: uuid
+        atlas_company_id:
+          type: string
+          format: uuid
+        template_version:
+          type: string
+        report_version_no:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [GENERATING, GENERATED, FAILED, SUPERSEDED]
+        input_hash:
+          type: string
+        content_hash:
+          type:
+            - string
+            - 'null'
+        mime_type:
+          type:
+            - string
+            - 'null'
+        file_size:
+          type:
+            - integer
+            - 'null'
+          format: int64
+        data_snapshot_id:
+          type: string
+          format: uuid
+        score_snapshot_id:
+          type: string
+          format: uuid
+        operator_confirmation_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        parsed_previous_report:
+          type: 'null'
+          description: 已退役；新报告直接由正式模板和当前数据生成
+        diff:
+          $ref: '#/components/schemas/ReportDiff'
+        failure_reason:
+          type:
+            - string
+            - 'null'
+        generated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        generated_by:
+          type: string
+    PreviousReport:
+      type: object
+      required:
+        - template_recognized
+        - confidence
+        - company_fields
+        - conclusions
+        - reusable_sections
+        - unmapped_locations
+      properties:
+        template_recognized:
+          type: boolean
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        report_date:
+          type:
+            - string
+            - 'null'
+          format: date
+        data_as_of:
+          type:
+            - string
+            - 'null'
+          format: date
+        company_name:
+          type:
+            - string
+            - 'null'
+        company_fields:
+          type: object
+          additionalProperties:
+            type: string
+        original_risk_score:
+          type:
+            - number
+            - 'null'
+        manual_risk_score:
+          type:
+            - number
+            - 'null'
+        risk_level:
+          type:
+            - string
+            - 'null'
+        conclusions:
+          type: array
+          items:
+            type: string
+        reusable_sections:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        unmapped_locations:
+          type: array
+          items:
+            type: string
+    ReportDiff:
+      type: object
+      required:
+        - company_changes
+        - section_changes
+        - table_row_changes
+        - conclusion_changes
+        - current_report_date
+        - current_risk_event_count
+        - summary
+      properties:
+        company_changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportFieldChange'
+        section_changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportFieldChange'
+        table_row_changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportFieldChange'
+        conclusion_changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportFieldChange'
+        previous_report_date:
+          type:
+            - string
+            - 'null'
+        current_report_date:
+          type: string
+        previous_risk_score:
+          type:
+            - string
+            - 'null'
+        original_risk_score:
+          type:
+            - string
+            - 'null'
+        manual_risk_score:
+          type:
+            - string
+            - 'null'
+        current_risk_event_count:
+          type: integer
+          minimum: 0
+        summary:
+          type: string
+        previous_report_version_no:
+          type: [integer, 'null']
+        current_report_version_no:
+          type: integer
+          minimum: 0
+        previous_original_risk_score:
+          type: [string, 'null']
+        previous_manual_risk_score:
+          type: [string, 'null']
+        previous_risk_event_count:
+          type: [integer, 'null']
+        previous_template_version:
+          type: [string, 'null']
+        current_template_version:
+          type: [string, 'null']
+    ReportFieldChange:
+      type: object
+      required:
+        - field
+        - before_value
+        - after_value
+      properties:
+        field:
+          type: string
+        before_value:
+          type:
+            - string
+            - 'null'
+        after_value:
+          type:
+            - string
+            - 'null'
+    Error:
+      type: object
+      required:
+        - code
+        - message
+        - trace_id
+        - retryable
+        - details
+        - occurred_at
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        task_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        trace_id:
+          type: string
+        retryable:
+          type: boolean
+        details:
+          type: object
+          additionalProperties: true
+        occurred_at:
+          type: string
+          format: date-time

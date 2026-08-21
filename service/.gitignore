@@ -1,0 +1,8 @@
+.data/
+target/
+**/target/
+.idea/
+.vscode/
+*.iml
+*.log
+.mvn-local/

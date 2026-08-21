@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas 企业情报 Agent · 对话原型</title>
+  <style>
+    :root {
+      --bg: #f5f5f2;
+      --surface: #fffefb;
+      --surface-2: #fafaf7;
+      --ink: #181a1c;
+      --text: #34383b;
+      --muted: #73787b;
+      --faint: #a3a7a7;
+      --line: #e0e1dc;
+      --line-strong: #cfd1ca;
+      --blue: #3157f6;
+      --blue-dark: #2343c5;
+      --blue-soft: #edf0ff;
+      --red: #b74734;
+      --red-soft: #fff0ed;
+      --amber: #a46619;
+      --amber-soft: #fff5e5;
+      --green: #20764d;
+      --green-soft: #e9f6ee;
+      --shadow: 0 16px 44px rgba(35, 38, 34, .09);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 60px minmax(0, 1fr) auto;
+      overflow: hidden;
+    }
+
+    .topbar {
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 254, 251, .9);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 760;
+      letter-spacing: -.025em;
+    }
+
+    .brand-mark {
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px 8px 8px 2px;
+      color: white;
+      background: var(--ink);
+      font-size: 12px;
+    }
+
+    .case {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .case-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 4px var(--green-soft);
+    }
+
+    .top-actions {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .mode-switch {
+      display: flex;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 9px;
+      background: #ecece8;
+    }
+
+    .mode-button, .icon-button, .button, .chip, .citation {
+      border: 0;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .mode-button {
+      padding: 6px 10px;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .mode-button.active {
+      color: var(--ink);
+      background: white;
+      box-shadow: 0 2px 7px rgba(29, 33, 29, .08);
+    }
+
+    .icon-button {
+      width: 33px;
+      height: 33px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: white;
+      font-size: 15px;
+    }
+
+    .icon-button:hover, .button:hover { transform: translateY(-1px); border-color: #b5b8b1; }
+
+    .chat-scroll {
+      min-height: 0;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+    }
+
+    .chat {
+      width: min(900px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 42px 0 38px;
+    }
+
+    .date-marker {
+      width: max-content;
+      margin: 0 auto 34px;
+      color: var(--faint);
+      font-size: 10px;
+      letter-spacing: .08em;
+    }
+
+    .turn {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 13px;
+      margin-bottom: 31px;
+    }
+
+    .turn.user {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .user-bubble {
+      max-width: 680px;
+      padding: 14px 17px;
+      border-radius: 17px 17px 4px 17px;
+      color: #f8f8f5;
+      background: #292c30;
+      font-size: 14px;
+      line-height: 1.75;
+      box-shadow: 0 8px 22px rgba(24, 27, 28, .10);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px 10px 10px 3px;
+      color: white;
+      background: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 7px 17px rgba(49, 87, 246, .18);
+    }
+
+    .assistant-message { min-width: 0; }
+
+    .assistant-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 32px;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .assistant-name .thinking {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .prose {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .prose p { margin: 0 0 12px; }
+    .prose strong { color: var(--ink); }
+
+    details.activity {
+      margin-top: 13px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .55);
+      overflow: hidden;
+    }
+
+    details.activity summary {
+      list-style: none;
+      padding: 10px 13px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    details.activity summary::-webkit-details-marker { display: none; }
+    details.activity summary::before { content: "＋"; display: inline-block; width: 18px; color: var(--blue); }
+    details.activity[open] summary::before { content: "－"; }
+
+    .activity-list {
+      display: grid;
+      gap: 8px;
+      padding: 0 13px 13px 31px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .activity-item { display: flex; align-items: center; gap: 8px; }
+    .check { color: var(--green); }
+    .running { color: var(--blue); }
+
+    .result-message {
+      margin-top: 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 15px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 22px 22px 19px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .result-kicker {
+      margin-bottom: 7px;
+      color: var(--blue);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .11em;
+    }
+
+    .result-head h2 {
+      margin: 0 0 6px;
+      font-family: "Songti SC", "STSong", Georgia, serif;
+      font-size: 24px;
+      letter-spacing: -.02em;
+    }
+
+    .result-head p { margin: 0; color: var(--muted); font-size: 11px; }
+
+    .score {
+      flex: 0 0 auto;
+      padding: 9px 11px;
+      border: 1px solid #eec8bf;
+      border-radius: 9px;
+      color: var(--red);
+      background: var(--red-soft);
+      text-align: right;
+      font-size: 10px;
+    }
+
+    .score strong { display: block; font-size: 23px; line-height: 1; }
+
+    .summary {
+      padding: 19px 22px;
+      color: #2f3335;
+      font-family: "Songti SC", "STSong", Georgia, serif;
+      font-size: 16px;
+      line-height: 1.85;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .findings { padding: 3px 22px 8px; }
+
+    .finding {
+      display: grid;
+      grid-template-columns: 8px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      padding: 17px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .finding:last-child { border-bottom: 0; }
+
+    .severity {
+      width: 7px;
+      height: 7px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 4px var(--red-soft);
+    }
+
+    .finding.amber .severity { background: var(--amber); box-shadow: 0 0 0 4px var(--amber-soft); }
+
+    .finding-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .badge {
+      padding: 3px 6px;
+      border-radius: 5px;
+      background: var(--red-soft);
+      color: var(--red);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .badge.amber { color: var(--amber); background: var(--amber-soft); }
+    .badge.green { color: var(--green); background: var(--green-soft); }
+
+    .finding p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+
+    .citation {
+      padding: 5px 0;
+      color: var(--blue);
+      background: transparent;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .citation:hover { text-decoration: underline; }
+
+    .evidence-inline {
+      display: none;
+      grid-column: 2 / 4;
+      margin-top: 5px;
+      padding: 13px 14px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+    }
+
+    .finding.expanded .evidence-inline { display: block; }
+
+    .source-row {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 10px;
+    }
+
+    .source-row:last-child { border-bottom: 0; }
+    .source-no { color: var(--blue); }
+    .source-name { color: var(--text); }
+    .source-meta { color: var(--faint); }
+
+    .result-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 22px;
+      border-top: 1px solid var(--line);
+      background: #fbfbf8;
+    }
+
+    .trace { color: var(--muted); font-size: 10px; }
+    .trace strong { color: var(--green); }
+
+    .button-group { display: flex; gap: 7px; }
+
+    .button {
+      padding: 8px 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: white;
+      font-size: 11px;
+    }
+
+    .button.primary { border-color: var(--blue); color: white; background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+
+    .decision {
+      margin-top: 12px;
+      padding: 15px 16px;
+      border-left: 3px solid var(--amber);
+      border-radius: 2px 10px 10px 2px;
+      background: var(--amber-soft);
+    }
+
+    .decision-label { color: var(--amber); font-size: 10px; font-weight: 800; margin-bottom: 6px; }
+    .decision p { margin: 0 0 12px; color: var(--text); font-size: 13px; line-height: 1.65; }
+
+    .report-file {
+      display: none;
+      align-items: center;
+      gap: 13px;
+      margin-top: 11px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: white;
+    }
+
+    .report-file.visible { display: flex; }
+
+    .file-icon {
+      width: 38px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-weight: 800;
+    }
+
+    .file-info { min-width: 0; flex: 1; }
+    .file-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-meta { color: var(--muted); font-size: 10px; }
+
+    .composer-wrap {
+      z-index: 8;
+      padding: 10px 20px 18px;
+      background: linear-gradient(to top, var(--bg) 72%, rgba(245, 245, 242, 0));
+    }
+
+    .composer-shell {
+      width: min(900px, 100%);
+      margin: 0 auto;
+    }
+
+    .chips {
+      display: flex;
+      gap: 7px;
+      padding: 0 5px 9px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex: 0 0 auto;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .72);
+      font-size: 10px;
+    }
+
+    .chip:hover { color: var(--ink); background: white; }
+
+    .composer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 10px;
+      padding: 12px 12px 12px 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0 12px 36px rgba(32, 36, 31, .10);
+      transition: .18s ease;
+    }
+
+    .composer:focus-within { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft), 0 12px 36px rgba(32, 36, 31, .10); }
+
+    textarea {
+      width: 100%;
+      height: 48px;
+      max-height: 130px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .send {
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 11px;
+      color: white;
+      background: var(--blue);
+      cursor: pointer;
+      font-size: 17px;
+      transition: .18s ease;
+    }
+
+    .send:hover { transform: translateY(-1px); background: var(--blue-dark); }
+
+    .composer-hint { padding: 7px 5px 0; color: var(--faint); text-align: center; font-size: 9px; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 124px;
+      z-index: 50;
+      transform: translate(-50%, 12px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 9px 13px;
+      border-radius: 8px;
+      color: white;
+      background: #222528;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .16);
+      font-size: 11px;
+      transition: .2s ease;
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 760px) {
+      .topbar { grid-template-columns: 1fr auto; padding: 0 13px; }
+      .case { display: none; }
+      .top-actions .icon-button { display: none; }
+      .chat { width: min(100% - 24px, 900px); padding-top: 26px; }
+      .turn { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; }
+      .avatar { width: 29px; height: 29px; }
+      .result-head { padding: 18px; }
+      .summary, .findings { padding-left: 18px; padding-right: 18px; }
+      .finding { grid-template-columns: 8px minmax(0, 1fr); }
+      .citation { grid-column: 2; justify-self: start; }
+      .evidence-inline { grid-column: 2; }
+      .result-footer { align-items: flex-start; flex-direction: column; padding: 13px 18px; }
+      .button-group { width: 100%; }
+      .button-group .button { flex: 1; }
+      .composer-wrap { padding-left: 10px; padding-right: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">A</span>Atlas 企业情报</div>
+      <div class="case"><span class="case-dot"></span>北京童程童慧科技有限公司 · 主体已确认</div>
+      <div class="top-actions">
+        <div class="mode-switch" role="tablist" aria-label="调查视角">
+          <button class="mode-button active" data-mode="risk" role="tab" aria-selected="true">风险排查</button>
+          <button class="mode-button" data-mode="opportunity" role="tab" aria-selected="false">招商线索</button>
+        </div>
+        <button class="icon-button" id="newChat" aria-label="新建对话">＋</button>
+      </div>
+    </header>
+
+    <main class="chat-scroll" id="chatScroll">
+      <section class="chat" id="chat" aria-live="polite">
+        <div class="date-marker">今天 · 企业调查任务</div>
+
+        <div class="turn user">
+          <div class="user-bubble">调查北京童程童慧科技有限公司近一年的经营状况，重点核实失联、拖欠工资和门店关闭，并更新原风险报告。</div>
+        </div>
+
+        <div class="turn assistant">
+          <div class="avatar">A</div>
+          <div class="assistant-message">
+            <div class="assistant-name">Atlas <span class="thinking">调查中</span></div>
+            <div class="prose">
+              <p>已确认目标企业主体。我会比较原报告与最新工商信息，查询内部风险记录，并搜索公开舆情和投诉。未能核验的信息不会直接写入正式结论。</p>
+            </div>
+            <details class="activity">
+              <summary>查看 Agent 执行过程</summary>
+              <div class="activity-list">
+                <div class="activity-item"><span class="check">✓</span>企业主体识别：统一社会信用代码已确认</div>
+                <div class="activity-item"><span class="check">✓</span>权威企业数据：工商与标准风险查询完成</div>
+                <div class="activity-item"><span class="check">✓</span>内部 ES：历史标签与原报告读取完成</div>
+                <div class="activity-item"><span class="check">✓</span>公开舆情：近 12 个月结果已去重</div>
+                <div class="activity-item"><span class="running">●</span>证据核验：2 项主体归属需要人工判断</div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="turn assistant" id="resultTurn">
+          <div class="avatar">A</div>
+          <div class="assistant-message">
+            <div class="assistant-name">Atlas <span>调查结果</span></div>
+            <div class="prose"><p>调查已经形成初步结论。以下内容基于演示数据，用来展示对话式结果和证据交互。</p></div>
+
+            <section class="result-message" id="riskResult">
+              <header class="result-head">
+                <div>
+                  <div class="result-kicker">风险调查摘要</div>
+                  <h2>发现 3 项重点经营风险</h2>
+                  <p>北京童程童慧科技有限公司 · 数据截止 2026-07-15</p>
+                </div>
+                <div class="score">风险评分<strong>9.8</strong>原报告已人工调整</div>
+              </header>
+              <div class="summary">当前建议维持高风险。其中失联风险已有多来源支持；拖欠工资和门店关闭仍需完成主体及处理状态核验。</div>
+              <div class="findings">
+                <article class="finding">
+                  <span class="severity"></span>
+                  <div>
+                    <div class="finding-title">失联风险 <span class="badge">高关注</span><span class="badge green">92%</span></div>
+                    <p>多个公开联系方式无法接通，历史数据存在失联标签，三项来源指向同一主体。</p>
+                  </div>
+                  <button class="citation">证据 [1–3]</button>
+                  <div class="evidence-inline">
+                    <div class="source-row"><span class="source-no">[1]</span><span class="source-name">国家企业信用信息公示系统 · 主体信息</span><span class="source-meta">已核验</span></div>
+                    <div class="source-row"><span class="source-no">[2]</span><span class="source-name">权威企业数据 · 联系方式变更</span><span class="source-meta">2026-07-14</span></div>
+                    <div class="source-row"><span class="source-no">[3]</span><span class="source-name">内部 ES · 历史失联标签</span><span class="source-meta">部分可追溯</span></div>
+                  </div>
+                </article>
+                <article class="finding amber">
+                  <span class="severity"></span>
+                  <div>
+                    <div class="finding-title">拖欠工资 <span class="badge amber">待确认</span><span class="badge amber">68%</span></div>
+                    <p>近九十天出现多起相关投诉，投诉主体与经营门店关联度较高，金额及处置状态待补充。</p>
+                  </div>
+                  <button class="citation">证据 [4–5]</button>
+                  <div class="evidence-inline">
+                    <div class="source-row"><span class="source-no">[4]</span><span class="source-name">投诉平台 · 欠薪投诉摘要</span><span class="source-meta">主体已匹配</span></div>
+                    <div class="source-row"><span class="source-no">[5]</span><span class="source-name">内部风险监测 · 经营信号</span><span class="source-meta">待人工核验</span></div>
+                  </div>
+                </article>
+                <article class="finding amber">
+                  <span class="severity"></span>
+                  <div>
+                    <div class="finding-title">门店关闭 <span class="badge amber">主体待核验</span></div>
+                    <p>公开信息显示五家门店关闭或注销，其中两家与目标主体关系明确，其余可能属于关联品牌。</p>
+                  </div>
+                  <button class="citation">证据 [6–8]</button>
+                  <div class="evidence-inline">
+                    <div class="source-row"><span class="source-no">[6]</span><span class="source-name">公开新闻 · 门店关闭报道</span><span class="source-meta">2026-06-20</span></div>
+                    <div class="source-row"><span class="source-no">[7]</span><span class="source-name">门店页面 · 注销状态</span><span class="source-meta">已核验 2 家</span></div>
+                    <div class="source-row"><span class="source-no">[8]</span><span class="source-name">投诉平台 · 用户记录</span><span class="source-meta">关联关系待确认</span></div>
+                  </div>
+                </article>
+              </div>
+              <footer class="result-footer">
+                <span class="trace">证据可追溯 <strong>8 / 10</strong> · 8 个数据来源</span>
+                <div class="button-group">
+                  <button class="button" id="askButton">继续追问</button>
+                  <button class="button primary" id="generateReport">生成风险提示报告</button>
+                </div>
+              </footer>
+            </section>
+
+            <section class="result-message" id="opportunityResult" hidden>
+              <header class="result-head">
+                <div>
+                  <div class="result-kicker">招商线索摘要</div>
+                  <h2>建议列为谨慎跟进线索</h2>
+                  <p>北京童程童慧科技有限公司 · 数据截止 2026-07-15</p>
+                </div>
+                <div class="score" style="color:var(--amber);border-color:#edd2a8;background:var(--amber-soft)">线索等级<strong>B</strong>需风险前置核验</div>
+              </header>
+              <div class="summary">企业与数字教育产业方向具有一定匹配度，但近期负面经营信号较多。建议先核实实际经营团队、扩张计划和风险处置情况，再决定是否正式接触。</div>
+              <div class="findings">
+                <article class="finding amber">
+                  <span class="severity"></span>
+                  <div><div class="finding-title">产业方向匹配 <span class="badge green">较高</span></div><p>业务覆盖教育科技服务，与数字教育方向相符；需要进一步确认核心产品和属地团队。</p></div>
+                  <button class="citation">依据 [1–3]</button>
+                  <div class="evidence-inline"><div class="source-row"><span class="source-no">[1]</span><span class="source-name">工商经营范围与企业介绍</span><span class="source-meta">已核验</span></div><div class="source-row"><span class="source-no">[2]</span><span class="source-name">知识产权与产品信息</span><span class="source-meta">公开数据</span></div></div>
+                </article>
+                <article class="finding amber">
+                  <span class="severity"></span>
+                  <div><div class="finding-title">经营活跃度 <span class="badge amber">信号冲突</span></div><p>近期仍有招聘和业务动态，同时存在投诉与闭店信号，暂不建议列为优先线索。</p></div>
+                  <button class="citation">依据 [4–6]</button>
+                  <div class="evidence-inline"><div class="source-row"><span class="source-no">[4]</span><span class="source-name">招聘与经营动态</span><span class="source-meta">近 90 天</span></div><div class="source-row"><span class="source-no">[5]</span><span class="source-name">投诉及闭店信息</span><span class="source-meta">待核验</span></div></div>
+                </article>
+              </div>
+              <footer class="result-footer">
+                <span class="trace">事实底稿与风险调查共享 · <strong>6 项依据</strong></span>
+                <div class="button-group"><button class="button" id="askOpportunity">继续追问</button><button class="button primary" id="generateLeadReport">生成招商线索报告</button></div>
+              </footer>
+            </section>
+          </div>
+        </div>
+
+        <div class="turn assistant" id="decisionTurn">
+          <div class="avatar">A</div>
+          <div class="assistant-message">
+            <div class="assistant-name">Atlas <span>需要确认</span></div>
+            <div class="decision">
+              <div class="decision-label">主体归属存在不确定性</div>
+              <p>两条关店信息可能属于关联公司。是否展开股东、品牌和分支机构关系后继续核验？</p>
+              <div class="button-group">
+                <button class="button primary" data-decision="展开关联主体调查">展开调查</button>
+                <button class="button" data-decision="暂不展开，保留为待核验">暂不展开</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="turn assistant" id="reportTurn" hidden>
+          <div class="avatar">A</div>
+          <div class="assistant-message">
+            <div class="assistant-name">Atlas <span>报告已生成</span></div>
+            <div class="prose"><p id="reportText">已根据确认的事实和证据生成风险提示报告草稿。待核验事项已单独标注，没有写成确定结论。</p></div>
+            <div class="report-file visible">
+              <div class="file-icon">DOC</div>
+              <div class="file-info"><div class="file-name" id="fileName">北京童程童慧科技有限公司_风险提示报告_草稿.docx</div><div class="file-meta">草稿 · 证据 8 项 · 尚未提交人工复核</div></div>
+              <button class="button" id="previewFile">预览报告</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="composer-wrap">
+      <div class="composer-shell">
+        <div class="chips">
+          <button class="chip" data-prompt="请只看旧报告之后新增的风险。">只看新增风险</button>
+          <button class="chip" data-prompt="请继续展开关联企业并判断风险是否传导。">展开关联企业</button>
+          <button class="chip" data-prompt="请解释风险评分为什么是 9.8。">解释风险评分</button>
+          <button class="chip" data-prompt="切换到招商视角并评估是否值得跟进。">评估招商价值</button>
+        </div>
+        <div class="composer">
+          <textarea id="prompt" aria-label="向 Atlas 下达任务" placeholder="继续追问、补充要求，或输入新的企业调查任务…"></textarea>
+          <button class="send" id="send" aria-label="发送">↑</button>
+        </div>
+        <div class="composer-hint">Atlas 可能犯错；正式风险结论需经过人工复核</div>
+      </div>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const state = { mode: 'risk' };
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+    function showToast(text) {
+      const toast = $('#toast');
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2100);
+    }
+
+    function scrollToBottom() {
+      const scroll = $('#chatScroll');
+      requestAnimationFrame(() => scroll.scrollTo({ top: scroll.scrollHeight, behavior: 'smooth' }));
+    }
+
+    function appendTurn(text, assistant = false) {
+      const turn = document.createElement('div');
+      turn.className = `turn ${assistant ? 'assistant' : 'user'}`;
+      if (assistant) {
+        turn.innerHTML = '<div class="avatar">A</div><div class="assistant-message"><div class="assistant-name">Atlas</div><div class="prose"><p></p></div></div>';
+        $('p', turn).textContent = text;
+      } else {
+        turn.innerHTML = '<div class="user-bubble"></div>';
+        $('.user-bubble', turn).textContent = text;
+      }
+      $('#chat').appendChild(turn);
+      scrollToBottom();
+    }
+
+    function sendPrompt(text) {
+      const input = $('#prompt');
+      const value = (text ?? input.value).trim();
+      if (!value) return;
+      appendTurn(value);
+      input.value = '';
+      setTimeout(() => appendTurn(state.mode === 'risk'
+        ? '已收到。我会把这项要求加入当前风险调查，并更新相应结论与证据范围。'
+        : '已收到。我会结合招商目标重新评估产业匹配、经营信号与风险约束。', true), 260);
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      $$('.mode-button').forEach(button => {
+        const active = button.dataset.mode === mode;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+      $('#riskResult').hidden = mode !== 'risk';
+      $('#opportunityResult').hidden = mode !== 'opportunity';
+      showToast(mode === 'risk' ? '已切换为风险排查' : '已切换为招商线索');
+      $('#resultTurn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function generateReport(type) {
+      const opportunity = type === 'opportunity';
+      $('#reportText').textContent = opportunity
+        ? '已根据企业事实底稿生成招商线索报告草稿，同时保留了风险约束和需要进一步核实的招商条件。'
+        : '已根据确认的事实和证据生成风险提示报告草稿。待核验事项已单独标注，没有写成确定结论。';
+      $('#fileName').textContent = opportunity
+        ? '北京童程童慧科技有限公司_招商线索报告_草稿.docx'
+        : '北京童程童慧科技有限公司_风险提示报告_草稿.docx';
+      $('#reportTurn').hidden = false;
+      scrollToBottom();
+    }
+
+    $('#send').addEventListener('click', () => sendPrompt());
+    $('#prompt').addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendPrompt();
+      }
+    });
+
+    $$('.chip').forEach(button => button.addEventListener('click', () => {
+      if (button.textContent.includes('招商')) setMode('opportunity');
+      sendPrompt(button.dataset.prompt);
+    }));
+
+    $$('.mode-button').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+
+    $$('.citation').forEach(button => button.addEventListener('click', () => {
+      button.closest('.finding').classList.toggle('expanded');
+      button.textContent = button.closest('.finding').classList.contains('expanded') ? '收起证据' : button.dataset.original || button.textContent;
+    }));
+    $$('.citation').forEach(button => button.dataset.original = button.textContent);
+
+    $$('[data-decision]').forEach(button => button.addEventListener('click', () => {
+      appendTurn(button.dataset.decision);
+      $('#decisionTurn').hidden = true;
+      setTimeout(() => appendTurn('已记录你的决定。我会据此继续调查，并在最终报告中保留这次人工操作记录。', true), 260);
+    }));
+
+    $('#generateReport').addEventListener('click', () => generateReport('risk'));
+    $('#generateLeadReport').addEventListener('click', () => generateReport('opportunity'));
+    $('#askButton').addEventListener('click', () => $('#prompt').focus());
+    $('#askOpportunity').addEventListener('click', () => $('#prompt').focus());
+    $('#previewFile').addEventListener('click', () => showToast('报告预览将在正式版本中打开'));
+    $('#newChat').addEventListener('click', () => {
+      $('#prompt').value = '';
+      $('#prompt').placeholder = '输入企业名称、调查目标和需要重点关注的问题…';
+      $('#prompt').focus();
+      showToast('请下达新的企业调查任务');
+    });
+  </script>
+</body>
+</html>

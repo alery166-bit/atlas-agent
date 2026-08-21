@@ -1,0 +1,38 @@
+{
+  "hits": {
+    "total": 1,
+    "hits": [
+      {
+        "_id": "json-company-1",
+        "_source": {
+          "companyId": "json-company-1",
+          "fullName": "JSON样本企业有限公司",
+          "shortName": "JSON样本",
+          "brands": ["样本云"],
+          "socialIdentifier": "91110101JSON000001",
+          "registerNum": "110101JSON0001",
+          "corporation": "王一",
+          "operateStatus": "在营",
+          "qccAddress": "北京市朝阳区JSON路1号",
+          "companyType": "有限责任公司",
+          "capital": "100",
+          "unit": "万元人民币",
+          "businessStartTime": "2020-01-01",
+          "registerAuthority": "北京市朝阳区市场监督管理局",
+          "businessScope": "技术服务",
+          "industry": "软件和信息技术服务业",
+          "riskScore": 3.25,
+          "updateTime": 1785254400000,
+          "recentAddRiskLabel": [
+            {
+              "riskLabel": "拖欠工资",
+              "labelTime": 1785168000000,
+              "type": "long",
+              "fromId": "json-risk-1"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

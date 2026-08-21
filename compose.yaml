@@ -1,0 +1,175 @@
+name: atlas-enterprise-agent
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: atlas
+      POSTGRES_USER: ${ATLAS_DB_USERNAME:-atlas}
+      POSTGRES_PASSWORD: ${ATLAS_DB_PASSWORD:-atlas-local-only}
+    volumes:
+      - atlas-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  service:
+    build:
+      context: .
+      dockerfile: deploy/backend.Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      ATLAS_DB_URL: jdbc:postgresql://postgres:5432/atlas
+      ATLAS_DB_USERNAME: ${ATLAS_DB_USERNAME:-atlas}
+      ATLAS_DB_PASSWORD: ${ATLAS_DB_PASSWORD:-atlas-local-only}
+      ATLAS_COMPANY_DATA_ROOT: /data/company-data
+      ATLAS_DATA_PROVIDER: ${ATLAS_DATA_PROVIDER:-offline}
+      ATLAS_ES_BASE_URL: ${ATLAS_ES_BASE_URL:-http://elasticsearch-dev:9200}
+      ATLAS_ES_CONNECT_TIMEOUT: ${ATLAS_ES_CONNECT_TIMEOUT:-3s}
+      ATLAS_ES_REQUEST_TIMEOUT: ${ATLAS_ES_REQUEST_TIMEOUT:-15s}
+      ATLAS_ES_MAX_RECORDS: ${ATLAS_ES_MAX_RECORDS:-5000}
+      ATLAS_ES_COMPANY_ALIAS: ${ATLAS_ES_COMPANY_ALIAS:-atlas-company-read}
+      ATLAS_ES_EVENT_ALIAS: ${ATLAS_ES_EVENT_ALIAS:-atlas-company-event-read}
+      ATLAS_ES_PUBLIC_INTEL_ALIAS: ${ATLAS_ES_PUBLIC_INTEL_ALIAS:-atlas-public-intel-read}
+      ATLAS_ES_CONTACT_ALIAS: ${ATLAS_ES_CONTACT_ALIAS:-atlas-company-contact-read}
+      ATLAS_ES_RELATION_ALIAS: ${ATLAS_ES_RELATION_ALIAS:-atlas-company-relation-read}
+      ATLAS_ES_USERNAME: ${ATLAS_ES_USERNAME:-}
+      ATLAS_ES_PASSWORD: ${ATLAS_ES_PASSWORD:-}
+      ATLAS_ES_API_KEY: ${ATLAS_ES_API_KEY:-}
+      ATLAS_COMPANY_REFRESH_ENABLED: ${ATLAS_COMPANY_REFRESH_ENABLED:-false}
+      ATLAS_COMPANY_REFRESH_BASE_URL: ${ATLAS_COMPANY_REFRESH_BASE_URL:-https://openapi.xiaolanben.com/api/}
+      ATLAS_COMPANY_REFRESH_ACCESS_ID: ${ATLAS_COMPANY_REFRESH_ACCESS_ID:-}
+      ATLAS_COMPANY_REFRESH_ACCESS_TOKEN: ${ATLAS_COMPANY_REFRESH_ACCESS_TOKEN:-}
+      ATLAS_COMPANY_REFRESH_CONNECT_TIMEOUT: ${ATLAS_COMPANY_REFRESH_CONNECT_TIMEOUT:-5s}
+      ATLAS_COMPANY_REFRESH_REQUEST_TIMEOUT: ${ATLAS_COMPANY_REFRESH_REQUEST_TIMEOUT:-30s}
+      ATLAS_COMPANY_REFRESH_MAX_ATTEMPTS: ${ATLAS_COMPANY_REFRESH_MAX_ATTEMPTS:-3}
+      ATLAS_COMPANY_REFRESH_PAGE_SIZE: ${ATLAS_COMPANY_REFRESH_PAGE_SIZE:-100}
+      ATLAS_COMPANY_REFRESH_MAX_RECORDS_PER_CATEGORY: ${ATLAS_COMPANY_REFRESH_MAX_RECORDS_PER_CATEGORY:-5000}
+      ATLAS_REPORT_TEMPLATE: /data/template.docx
+      ATLAS_MANAGED_TEMPLATE_ROOT: /data/files/report-templates
+      ATLAS_GOLDEN_ROOT: /data/files/golden
+      ATLAS_PREVIOUS_REPORT_ROOT: /data/previous-reports
+      ATLAS_STORAGE_ROOT: /data/files
+      ATLAS_ALLOWED_ORIGINS: ${ATLAS_ALLOWED_ORIGINS:-http://localhost:3000}
+      ATLAS_SECURITY_MODE: ${ATLAS_SECURITY_MODE:-local}
+      ATLAS_SECURITY_PROXY_SECRET: ${ATLAS_SECURITY_PROXY_SECRET:-}
+      ATLAS_REQUIRE_PUBLISHED_SKILLS: ${ATLAS_REQUIRE_PUBLISHED_SKILLS:-true}
+      ATLAS_SEARCH_PRIMARY_ENABLED: ${ATLAS_SEARCH_PRIMARY_ENABLED:-false}
+      ATLAS_SEARCH_PRIMARY_PROVIDER_TYPE: ${ATLAS_SEARCH_PRIMARY_PROVIDER_TYPE:-TAVILY}
+      ATLAS_SEARCH_PRIMARY_BASE_URL: ${ATLAS_SEARCH_PRIMARY_BASE_URL:-https://api.tavily.com}
+      ATLAS_SEARCH_PRIMARY_PATH: ${ATLAS_SEARCH_PRIMARY_PATH:-/search}
+      ATLAS_SEARCH_PRIMARY_API_KEY: ${TAVILY_API_KEY:-}
+      ATLAS_SEARCH_PRIMARY_SEARCH_DEPTH: ${ATLAS_SEARCH_PRIMARY_SEARCH_DEPTH:-basic}
+      ATLAS_SEARCH_PRIMARY_TOPIC: ${ATLAS_SEARCH_PRIMARY_TOPIC:-general}
+      ATLAS_SEARCH_PRIMARY_MAX_RESULTS: ${ATLAS_SEARCH_PRIMARY_MAX_RESULTS:-10}
+      ATLAS_SEARCH_PRIMARY_MAX_ATTEMPTS: ${ATLAS_SEARCH_PRIMARY_MAX_ATTEMPTS:-3}
+      ATLAS_SEARCH_PRIMARY_RETRY_BACKOFF: ${ATLAS_SEARCH_PRIMARY_RETRY_BACKOFF:-250ms}
+      ATLAS_SEARCH_PRIMARY_CIRCUIT_FAILURE_THRESHOLD: ${ATLAS_SEARCH_PRIMARY_CIRCUIT_FAILURE_THRESHOLD:-5}
+      ATLAS_SEARCH_PRIMARY_CIRCUIT_OPEN_DURATION: ${ATLAS_SEARCH_PRIMARY_CIRCUIT_OPEN_DURATION:-30s}
+      ATLAS_LLM_API_KEY: ${ATLAS_LLM_API_KEY:-}
+      ATLAS_MODEL_REVIEW_CONCURRENCY: ${ATLAS_MODEL_REVIEW_CONCURRENCY:-1}
+      ATLAS_SEARCH_LLM_ENABLED: ${ATLAS_SEARCH_LLM_ENABLED:-false}
+      ATLAS_SEARCH_LLM_BASE_URL: ${ATLAS_SEARCH_LLM_BASE_URL:-https://llm-search-gateway.invalid}
+      ATLAS_SEARCH_LLM_API_KEY: ${ATLAS_SEARCH_LLM_API_KEY:-}
+      ATLAS_SEARCH_LLM_MAX_ATTEMPTS: ${ATLAS_SEARCH_LLM_MAX_ATTEMPTS:-2}
+      ATLAS_SEARCH_LLM_RETRY_BACKOFF: ${ATLAS_SEARCH_LLM_RETRY_BACKOFF:-500ms}
+      ATLAS_SEARCH_LLM_CIRCUIT_FAILURE_THRESHOLD: ${ATLAS_SEARCH_LLM_CIRCUIT_FAILURE_THRESHOLD:-3}
+      ATLAS_SEARCH_LLM_CIRCUIT_OPEN_DURATION: ${ATLAS_SEARCH_LLM_CIRCUIT_OPEN_DURATION:-60s}
+    ports:
+      - "${ATLAS_SERVICE_PORT:-8080}:8080"
+    volumes:
+      - ./data/company:/data/company-data:ro
+      - ./data/templates/北京简熹和食品有限公司_企业风险监测分析报告20260714.docx:/data/template.docx:ro
+      - ./data/samples/乾道投资控股集团有限公司.json:/data/乾道投资控股集团有限公司.json:ro
+      - ./data/samples/北京童程童慧科技有限公司.json:/data/北京童程童慧科技有限公司.json:ro
+      - atlas-files:/data/files
+      - atlas-previous-reports:/data/previous-reports
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  console:
+    build:
+      context: .
+      dockerfile: deploy/console.Dockerfile
+      args:
+        NEXT_PUBLIC_ATLAS_API_BASE: ${ATLAS_PUBLIC_API_BASE:-http://localhost:8080}
+    ports:
+      - "${ATLAS_CONSOLE_PORT:-3000}:3000"
+    depends_on:
+      service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  elasticsearch-dev-init:
+    profiles: ["es-dev"]
+    image: atlas/elasticsearch-dev:${ATLAS_ES_VERSION:-9.4.2}
+    build:
+      context: .
+      dockerfile: deploy/elasticsearch-dev.Dockerfile
+      args:
+        ATLAS_ES_VERSION: ${ATLAS_ES_VERSION:-9.4.2}
+    user: "0:0"
+    entrypoint: ["chown", "-R", "10001:999", "/usr/share/elasticsearch/data"]
+    volumes:
+      - atlas-es:/usr/share/elasticsearch/data
+    restart: "no"
+
+  elasticsearch-dev:
+    profiles: ["es-dev"]
+    image: atlas/elasticsearch-dev:${ATLAS_ES_VERSION:-9.4.2}
+    build:
+      context: .
+      dockerfile: deploy/elasticsearch-dev.Dockerfile
+      args:
+        ATLAS_ES_VERSION: ${ATLAS_ES_VERSION:-9.4.2}
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.security.enrollment.enabled: "false"
+      bootstrap.memory_lock: "true"
+      ES_JAVA_OPTS: ${ATLAS_ES_JAVA_OPTS:--Xms2g -Xmx2g}
+    command:
+      - -Ecluster.name=atlas-dev-es
+      - -Enode.name=atlas-es-dev-1
+      - -Ediscovery.type=single-node
+      - -Enetwork.host=0.0.0.0
+      - -Expack.security.enabled=false
+      - -Expack.security.enrollment.enabled=false
+      - -Ebootstrap.memory_lock=true
+    mem_limit: ${ATLAS_ES_MEMORY_LIMIT:-4g}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    ports:
+      - "127.0.0.1:${ATLAS_ES_PORT:-9200}:9200"
+    volumes:
+      - atlas-es:/usr/share/elasticsearch/data
+    depends_on:
+      elasticsearch-dev-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent 'http://localhost:9200/_cluster/health?wait_for_status=yellow' >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  atlas-postgres:
+  atlas-files:
+  atlas-previous-reports:
+  atlas-es:

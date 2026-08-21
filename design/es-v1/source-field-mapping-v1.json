@@ -1,0 +1,539 @@
+{
+  "schema_version": "1.0",
+  "conventions": {
+    "unmapped_source_fields": "copy_to_source_payload_or_extensions",
+    "null_handling": "omit_target_field",
+    "date_parser": "strict_date_or_datetime_with_error_capture",
+    "money_parser": "preserve_raw_and_parse_value_currency_unit",
+    "json_parser": "parse_explicitly_and_reject_invalid_json",
+    "document_id": "stable_hash(source_system, source_table, source_record_id)",
+    "routing": "atlas_company_id"
+  },
+  "tables": {
+    "company_base": {
+      "target": "company",
+      "field_map": {
+        "company_id": "identity.source_company_id",
+        "company_name": "name.canonical",
+        "english_name": "name.english",
+        "short_name": "name.short",
+        "former_names": "name.aliases",
+        "credit_code": "identity.credit_code",
+        "register_no": "identity.register_no",
+        "organization_code": "identity.organization_code",
+        "taxpayer_no": "identity.taxpayer_no",
+        "taxpayer_type": "identity.taxpayer_type",
+        "company_type": "registration.company_type",
+        "company_type_code": "registration.company_type_code",
+        "legal_personal": "registration.legal_representative",
+        "registration_status": "registration.status",
+        "registration_authority": "registration.authority",
+        "open_date": "registration.open_date",
+        "check_date": "registration.check_date",
+        "business_start": "registration.business_start",
+        "business_end": "registration.business_end",
+        "cancel_date": "registration.cancel_date",
+        "revocation_date": "registration.revocation_date",
+        "business_scope": "registration.business_scope",
+        "register_capital": "capital.registered_raw",
+        "paid_capital": "capital.paid_raw",
+        "unit": "capital.unit",
+        "address": "addresses.registered",
+        "report_address": "addresses.report",
+        "business_address": "addresses.business",
+        "location": "addresses.geo",
+        "region": "addresses.region_code",
+        "industry_v8": "industry.source_value",
+        "industry_id": "industry.industry_id",
+        "brief": "business_profile.brief",
+        "insured_num": "business_profile.insured_num",
+        "site": "business_profile.websites",
+        "logo": "business_profile.logo_uri",
+        "actual_controller": "control.actual_controller",
+        "actual_path": "control.actual_path",
+        "risk_score": "risk_projection.legacy_score",
+        "risk_label": "risk_projection.legacy_labels",
+        "overall_rating": "risk_projection.legacy_overall_rating",
+        "update_time": "source.source_updated_at"
+      },
+      "transform": {
+        "former_names": "parse_json_array",
+        "risk_label": "parse_json_array",
+        "actual_path": "parse_json_object_or_array",
+        "overall_rating": "parse_json_object",
+        "register_capital": "parse_money_into_capital_registered_fields",
+        "paid_capital": "parse_money_into_capital_paid_fields",
+        "location": "parse_lon_lat_after_source_order_confirmation",
+        "industry_v8": "parse_json_or_preserve_source_value",
+        "site": "normalize_to_keyword_array"
+      },
+      "raw_only_fields": [
+        "id",
+        "cbd_label",
+        "report_label",
+        "register_label",
+        "office_label",
+        "create_time",
+        "is_monitor",
+        "mailbox",
+        "telephone"
+      ]
+    },
+    "company_contact": {
+      "target": "company_contact",
+      "field_map": {
+        "id": "source.record_id",
+        "company_id": "source.company_id",
+        "contact_type": "contact_type",
+        "contact_value": "value",
+        "contact_ext": "extension",
+        "update_time": "source.source_updated_at"
+      },
+      "transform": {
+        "contact_type": "normalize_contact_type",
+        "contact_value": "create_value_hash_and_masked_value"
+      }
+    },
+    "company_shareholder": {
+      "target": "company_relation",
+      "constants": {"relation_type": "SHAREHOLDER", "direction": "INBOUND"},
+      "field_map": {
+        "shareholder_name": "subject.name",
+        "shareholder_type": "subject.entity_type",
+        "capital": "ownership.registered_amount_raw",
+        "capital_date": "ownership.capital_date",
+        "paid_capital": "ownership.paid_amount_raw",
+        "rate": "ownership.ratio_raw",
+        "update_time": "source.source_updated_at"
+      },
+      "transform": {
+        "capital": "parse_decimal_preserving_raw",
+        "paid_capital": "parse_decimal_preserving_raw",
+        "rate": "decimal_ratio_to_percent"
+      }
+    },
+    "company_main_person": {
+      "target": "company_relation",
+      "constants": {"relation_type": "MAIN_PERSON", "direction": "INBOUND"},
+      "field_map": {
+        "name": "subject.name",
+        "position": "subject.position",
+        "weight": "extensions.weight",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_core_person": {
+      "target": "company_relation",
+      "constants": {"relation_type": "CORE_PERSON", "direction": "INBOUND"},
+      "field_map": {
+        "name": "subject.name",
+        "position": "subject.position",
+        "brief": "subject.brief",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_investment": {
+      "target": "company_relation",
+      "constants": {"relation_type": "OUTBOUND_INVESTMENT", "direction": "OUTBOUND"},
+      "field_map": {
+        "invested_company_id": "subject.entity_id",
+        "company_name": "subject.name",
+        "investment_amount": "ownership.registered_amount_raw",
+        "investment_rate": "ownership.ratio_raw",
+        "open_date": "valid_from",
+        "legal_personal": "subject.legal_representative",
+        "registration_status": "status",
+        "update_time": "source.source_updated_at"
+      },
+      "transform": {
+        "investment_amount": "parse_decimal_preserving_raw",
+        "investment_rate": "decimal_ratio_to_percent"
+      }
+    },
+    "company_branch": {
+      "target": "company_relation",
+      "constants": {"relation_type": "BRANCH", "direction": "OUTBOUND"},
+      "field_map": {
+        "branch_id": "subject.entity_id",
+        "branch_name": "subject.name",
+        "legal_personal": "subject.legal_representative",
+        "registration_status": "status",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_certificate": {
+      "target": "company_asset",
+      "constants": {"asset_type": "CERTIFICATE"},
+      "field_map": {
+        "name": "name",
+        "code": "code",
+        "status": "status",
+        "issued_by": "issuer",
+        "publish_date": "publish_date",
+        "expire_date": "end_date",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_trademark": {
+      "target": "company_asset",
+      "constants": {"asset_type": "TRADEMARK"},
+      "field_map": {
+        "name": "name",
+        "code": "number",
+        "classify_code": "classification_code",
+        "classify": "classification_name",
+        "status": "status",
+        "applicant_date": "application_date",
+        "applicant_name": "applicant_names",
+        "register_date": "register_date",
+        "agent_name": "agent_names",
+        "logo_url": "image_uri",
+        "start_date": "start_date",
+        "end_date": "end_date",
+        "category": "extensions.category",
+        "applicant_en_name": "extensions.applicant_en_name",
+        "applicant_address": "extensions.applicant_address",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_patent": {
+      "target": "company_asset",
+      "constants": {"asset_type": "PATENT"},
+      "field_map": {
+        "name": "name",
+        "applicant_no": "number",
+        "code": "code",
+        "category_code": "classification_code",
+        "type": "classification_name",
+        "status": "status",
+        "legal_status": "extensions.legal_status",
+        "desc": "description",
+        "applicant_name": "applicant_names",
+        "inventor_name": "inventor_names",
+        "agent_name": "agent_names",
+        "applicant_date": "application_date",
+        "publish_date": "publish_date",
+        "address": "extensions.address",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_software_copyright": {
+      "target": "company_asset",
+      "constants": {"asset_type": "SOFTWARE_COPYRIGHT"},
+      "field_map": {
+        "register_no": "number",
+        "name": "name",
+        "simple_name": "short_name",
+        "version_no": "code",
+        "publish_date": "publish_date",
+        "register_date": "register_date",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_standard": {
+      "target": "company_asset",
+      "constants": {"asset_type": "STANDARD"},
+      "field_map": {
+        "standard_no": "number",
+        "standard_name": "name",
+        "standard_level": "classification_name",
+        "status": "status",
+        "publish_date": "publish_date",
+        "standard_property": "extensions.standard_property",
+        "draft_unit": "extensions.draft_unit",
+        "drafter": "extensions.drafter",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_honor": {
+      "target": "company_asset",
+      "constants": {"asset_type": "HONOR"},
+      "field_map": {
+        "title": "name",
+        "type": "classification_name",
+        "level": "status",
+        "publish_date": "publish_date",
+        "issued_by": "issuer",
+        "year": "extensions.year",
+        "source": "extensions.source",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_business": {
+      "target": "company_asset",
+      "constants": {"asset_type": "PRODUCT_OR_BRAND"},
+      "field_map": {
+        "name": "name",
+        "desc": "description",
+        "slogan": "extensions.slogan",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_financing": {
+      "target": "company_asset",
+      "constants": {"asset_type": "FINANCING"},
+      "field_map": {
+        "round": "classification_name",
+        "investor": "applicant_names",
+        "amount": "amount.raw",
+        "financing_date": "application_date",
+        "update_time": "source.source_updated_at"
+      },
+      "transform": {"amount": "parse_decimal_when_possible_preserving_raw"}
+    },
+    "company_tax_credit": {
+      "target": "company_asset",
+      "constants": {"asset_type": "TAX_CREDIT"},
+      "field_map": {
+        "year": "extensions.year",
+        "level": "status",
+        "taxpayer": "number",
+        "evaluation_office": "issuer",
+        "update_time": "source.source_updated_at"
+      }
+    },
+    "company_news": {
+      "target": "public_intel",
+      "constants": {"intel_type": "INTERNAL_NEWS"},
+      "field_map": {
+        "id": "source.record_id",
+        "company_id": "source.company_id",
+        "publish_time": "published_at",
+        "title": "title",
+        "source_url": "source_url",
+        "content": "content",
+        "classify": "classification",
+        "update_time": "source.source_updated_at"
+      },
+      "transform": {
+        "source_url": "extract_source_domain",
+        "content": "derive_summary_and_content_hash"
+      }
+    },
+    "company_change": {
+      "target": "company_event",
+      "constants": {"event_group": "REGISTRATION", "event_type": "REGISTRATION_CHANGE", "risk_relevant": false},
+      "field_map": {
+        "change_date": "event_date",
+        "change_item": "change_detail.item",
+        "change_before": "change_detail.before",
+        "change_after": "change_detail.after"
+      }
+    },
+    "company_abnormal": {
+      "target": "company_event",
+      "constants": {"event_group": "REGISTRATION", "event_type": "BUSINESS_ABNORMAL", "risk_relevant": true},
+      "field_map": {
+        "enter_date": "event_date",
+        "enter_reason": "summary",
+        "enter_office": "authority",
+        "out_date": "end_date",
+        "out_reason": "extensions.out_reason",
+        "out_office": "extensions.out_office"
+      }
+    },
+    "company_administrative_penalty": {
+      "target": "company_event",
+      "constants": {"event_group": "REGULATORY", "event_type": "ADMINISTRATIVE_PENALTY", "risk_relevant": true},
+      "field_map": {
+        "penalty_date": "event_date",
+        "document_no": "document_no",
+        "decide_office": "authority",
+        "penalty_content": "penalty_detail.decision",
+        "penalty_type": "penalty_detail.penalty_type",
+        "penalty_fact": "penalty_detail.facts"
+      }
+    },
+    "company_environmental_penalty": {
+      "target": "company_event",
+      "constants": {"event_group": "REGULATORY", "event_type": "ENVIRONMENTAL_PENALTY", "risk_relevant": true},
+      "inherit": "company_administrative_penalty"
+    },
+    "company_illegal": {
+      "target": "company_event",
+      "constants": {"event_group": "REGULATORY", "event_type": "SERIOUS_ILLEGAL", "risk_relevant": true},
+      "field_map": {
+        "enter_date": "event_date",
+        "enter_reason": "summary",
+        "enter_office": "authority",
+        "out_date": "end_date",
+        "out_reason": "extensions.out_reason",
+        "out_office": "extensions.out_office"
+      }
+    },
+    "company_tax_illegal": {
+      "target": "company_event",
+      "constants": {"event_group": "TAX", "event_type": "TAX_ILLEGAL", "risk_relevant": true},
+      "field_map": {
+        "publish_date": "publish_date",
+        "illegal_type": "event_subtype",
+        "illegal_content": "summary",
+        "penalty_decision": "penalty_detail.decision"
+      }
+    },
+    "company_dishonest": {
+      "target": "company_event",
+      "constants": {"event_group": "JUDICIAL", "event_type": "DISHONEST", "risk_relevant": true},
+      "field_map": {
+        "case_no": "case_detail.case_no",
+        "court": "case_detail.court",
+        "case_date": "event_date",
+        "publish_date": "publish_date"
+      }
+    },
+    "company_executor": {
+      "target": "company_event",
+      "constants": {"event_group": "JUDICIAL", "event_type": "ENFORCEMENT", "risk_relevant": true},
+      "field_map": {
+        "case_no": "case_detail.case_no",
+        "court": "case_detail.court",
+        "case_date": "event_date",
+        "target_execution": "case_detail.target_execution_raw"
+      },
+      "transform": {"target_execution": "parse_money_into_amount_fields"}
+    },
+    "company_limit_consumption": {
+      "target": "company_event",
+      "constants": {"event_group": "JUDICIAL", "event_type": "LIMIT_CONSUMPTION", "risk_relevant": true},
+      "field_map": {
+        "case_no": "case_detail.case_no",
+        "court": "case_detail.court",
+        "case_date": "event_date",
+        "target": "summary",
+        "relation": "extensions.relation"
+      }
+    },
+    "company_filing": {
+      "target": "company_event",
+      "constants": {"event_group": "JUDICIAL", "event_type": "CASE_FILING", "risk_relevant": true},
+      "field_map": {
+        "case_no": "case_detail.case_no",
+        "case_type": "case_detail.case_type",
+        "case_brief": "case_detail.case_brief",
+        "court": "case_detail.court",
+        "department": "case_detail.department",
+        "filling_date": "event_date",
+        "closing_date": "end_date",
+        "case_status": "case_detail.case_status",
+        "plaintiff_name": "parties",
+        "defendant_name": "parties"
+      },
+      "transform": {
+        "plaintiff_name": "split_parties_with_role_PLAINTIFF",
+        "defendant_name": "split_parties_with_role_DEFENDANT"
+      }
+    },
+    "company_judgement": {
+      "target": "company_event",
+      "constants": {"event_group": "JUDICIAL", "event_type": "JUDGEMENT", "risk_relevant": true},
+      "field_map": {
+        "case_no": "case_detail.case_no",
+        "case_brief": "case_detail.case_brief",
+        "case_name": "case_detail.case_name",
+        "court": "case_detail.court",
+        "case_identify": "case_detail.case_identity",
+        "publish_date": "publish_date"
+      }
+    },
+    "company_bankruptcy": {
+      "target": "company_event",
+      "constants": {"event_group": "JUDICIAL", "event_type": "BANKRUPTCY", "risk_relevant": true},
+      "field_map": {
+        "case_no": "case_detail.case_no",
+        "case_type": "case_detail.case_type",
+        "court": "case_detail.court",
+        "respondent": "parties",
+        "proposer_raw": "parties",
+        "publish_date": "publish_date"
+      },
+      "transform": {
+        "respondent": "split_parties_with_role_RESPONDENT",
+        "proposer_raw": "split_parties_with_role_APPLICANT"
+      }
+    },
+    "company_auction": {
+      "target": "company_event",
+      "constants": {"event_group": "JUDICIAL", "event_type": "JUDICIAL_AUCTION", "risk_relevant": true},
+      "field_map": {
+        "title": "title",
+        "court": "case_detail.court",
+        "auction_name": "summary",
+        "consult_price": "amount.raw",
+        "auction_date": "event_date"
+      },
+      "transform": {"consult_price": "parse_money_into_amount_fields"}
+    },
+    "company_equity_freeze": {
+      "target": "company_event",
+      "constants": {"event_group": "EQUITY", "event_type": "EQUITY_FREEZE", "risk_relevant": true},
+      "field_map": {
+        "executor": "equity_detail.executor",
+        "notice_no": "document_no",
+        "court": "case_detail.court",
+        "amount": "amount.raw",
+        "unit": "amount.unit",
+        "status": "status",
+        "start_date": "start_date",
+        "end_date": "end_date",
+        "publish_date": "publish_date"
+      },
+      "transform": {"amount": "parse_decimal_preserving_raw"}
+    },
+    "company_equity_hostage": {
+      "target": "company_event",
+      "constants": {"event_group": "EQUITY", "event_type": "EQUITY_HOSTAGE", "risk_relevant": true},
+      "field_map": {
+        "register_no": "equity_detail.registration_no",
+        "register_date": "event_date",
+        "publish_date": "publish_date",
+        "status": "status",
+        "pledge": "equity_detail.pledgor",
+        "pledge_no": "equity_detail.pledgor_no",
+        "pledgee": "equity_detail.pledgee",
+        "pledgee_no": "equity_detail.pledgee_no",
+        "amount": "amount.raw"
+      },
+      "transform": {"amount": "parse_money_into_amount_fields"}
+    },
+    "company_equity_pledge": {
+      "target": "company_event",
+      "constants": {"event_group": "EQUITY", "event_type": "EQUITY_PLEDGE", "risk_relevant": true},
+      "field_map": {
+        "notice_date": "publish_date",
+        "frozen_person": "equity_detail.executor",
+        "frozen_num": "extensions.frozen_num",
+        "frozen_company": "equity_detail.frozen_company",
+        "pledgee": "equity_detail.pledgee",
+        "amount": "amount.raw",
+        "status": "status"
+      },
+      "transform": {"amount": "parse_money_into_amount_fields"}
+    },
+    "company_liquidation": {
+      "target": "company_event",
+      "constants": {"event_group": "REGISTRATION", "event_type": "LIQUIDATION", "risk_relevant": true},
+      "field_map": {
+        "cancellation_reason": "summary",
+        "establish_date": "event_date",
+        "leader": "parties",
+        "member": "parties",
+        "address": "extensions.address"
+      },
+      "transform": {
+        "leader": "split_parties_with_role_LEADER",
+        "member": "split_parties_with_role_MEMBER"
+      }
+    },
+    "company_simple_cancellation": {
+      "target": "company_event",
+      "constants": {"event_group": "REGISTRATION", "event_type": "SIMPLE_CANCELLATION", "risk_relevant": true},
+      "field_map": {
+        "approve_date": "event_date",
+        "cancel_date": "end_date",
+        "notice_start_date": "start_date",
+        "notice_end_date": "extensions.notice_end_date",
+        "cancellation_result": "summary"
+      }
+    }
+  }
+}

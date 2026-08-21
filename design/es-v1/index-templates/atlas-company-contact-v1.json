@@ -1,0 +1,63 @@
+{
+  "index_patterns": ["atlas-company-contact-v1-*"],
+  "priority": 500,
+  "version": 1,
+  "_meta": {"owner": "atlas", "schema_version": "1.0", "document_grain": "one company contact", "security": "restricted"},
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "refresh_interval": "30s",
+      "index.mapping.total_fields.limit": 300
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "_routing": {"required": true},
+      "properties": {
+        "contact_id": {"type": "keyword"},
+        "atlas_company_id": {"type": "keyword"},
+        "company": {
+          "properties": {
+            "name": {"type": "text", "fields": {"raw": {"type": "keyword", "ignore_above": 256}}},
+            "credit_code": {"type": "keyword"},
+            "source_company_id": {"type": "keyword"}
+          }
+        },
+        "contact_type": {"type": "keyword"},
+        "value": {"type": "keyword", "index": false, "doc_values": false},
+        "masked_value": {"type": "keyword", "index": false, "doc_values": false},
+        "value_hash": {"type": "keyword"},
+        "extension": {"type": "keyword", "index": false, "doc_values": false},
+        "validity": {
+          "properties": {
+            "status": {"type": "keyword"},
+            "last_verified_at": {"type": "date", "format": "strict_date_optional_time"},
+            "failure_count": {"type": "integer"},
+            "last_failure_reason": {"type": "keyword"},
+            "verification_source": {"type": "keyword"}
+          }
+        },
+        "source": {
+          "properties": {
+            "system": {"type": "keyword"},
+            "table": {"type": "keyword"},
+            "record_id": {"type": "keyword"},
+            "company_id": {"type": "keyword"},
+            "source_updated_at": {"type": "date", "format": "strict_date_optional_time"}
+          }
+        },
+        "ingest": {
+          "properties": {
+            "batch_id": {"type": "keyword"},
+            "schema_version": {"type": "keyword"},
+            "content_hash": {"type": "keyword"},
+            "dedupe_key": {"type": "keyword"},
+            "ingested_at": {"type": "date", "format": "strict_date_optional_time"},
+            "deleted": {"type": "boolean"}
+          }
+        },
+        "extensions": {"type": "flattened"}
+      }
+    }
+  }
+}
