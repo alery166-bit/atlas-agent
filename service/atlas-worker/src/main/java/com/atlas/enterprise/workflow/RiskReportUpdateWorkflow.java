@@ -291,6 +291,7 @@ public class RiskReportUpdateWorkflow implements TaskWorkflowRunner {
         SourceResult<CompanyFacts> facts;
         SourceResult<CompanyChange> changes;
         SourceResult<RiskEvent> riskEvents;
+        List<SourceStatus> statuses;
         String refreshId = null;
         if (companyRefresh != null && companyRefresh.enabled()) {
             CompanyRefreshResult refreshed = companyRefresh.refresh(
@@ -305,6 +306,7 @@ public class RiskReportUpdateWorkflow implements TaskWorkflowRunner {
             facts = refreshed.facts();
             changes = refreshed.changes();
             riskEvents = refreshed.riskEvents();
+            statuses = new ArrayList<>(refreshed.categoryStatuses());
             refreshId = refreshed.refreshId();
             publish(task.taskId(), "company.refresh.finished", Map.of(
                 "refreshId", refreshed.refreshId(),
@@ -326,11 +328,11 @@ public class RiskReportUpdateWorkflow implements TaskWorkflowRunner {
             facts = companyData.loadFacts(company);
             changes = companyData.loadChanges(company);
             riskEvents = companyData.loadRiskEvents(company);
+            statuses = new ArrayList<>();
+            statuses.addAll(facts.sourceStatuses());
+            statuses.addAll(changes.sourceStatuses());
+            statuses.addAll(riskEvents.sourceStatuses());
         }
-        List<SourceStatus> statuses = new ArrayList<>();
-        statuses.addAll(facts.sourceStatuses());
-        statuses.addAll(changes.sourceStatuses());
-        statuses.addAll(riskEvents.sourceStatuses());
 
         if (facts.failed() || changes.failed() || riskEvents.failed() || facts.records().isEmpty()) {
             failSource(
